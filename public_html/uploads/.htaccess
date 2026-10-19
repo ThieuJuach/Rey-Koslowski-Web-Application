@@ -1,0 +1,29 @@
+# ============================================================
+# Uploads Directory Security (OWASP: Unrestricted File Upload)
+# ============================================================
+
+# Disable PHP execution in uploads directory — prevents uploaded shell scripts
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+
+# Block .php, .phtml, .php5, .phar, etc. from being accessed directly
+<FilesMatch "\.(php|phtml|php5|php7|phar|cgi|pl|py|sh|bash)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Disable script execution
+Options -ExecCGI
+RemoveHandler .php .phtml .php5 .php7 .phar
+
+# Force PDFs to display inline (no download prompt)
+<IfModule mod_headers.c>
+    <FilesMatch "\.pdf$">
+        Header set Content-Disposition "inline"
+        Header set X-Content-Type-Options "nosniff"
+    </FilesMatch>
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes

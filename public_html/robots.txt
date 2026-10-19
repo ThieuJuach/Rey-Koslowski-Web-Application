@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Private / non-content areas
+Disallow: /admin/
+Disallow: /api/
+Disallow: /database/
+Disallow: /logs/
+Disallow: /includes/
+
+# NOTE: /uploads/pdfs/ used to be disallowed here. That was counter-productive for an
+# academic site — the publication, presentation and CV PDFs are primary content, and
+# pages link straight to them, which made Search Console report those links as
+# "Blocked by robots.txt". Google indexes PDFs and they carry real search value, so
+# they are now crawlable. Videos stay blocked; they are large and not indexable text.
+Disallow: /uploads/videos/
+
+Sitemap: https://darkblue-badger-609934.hostingersite.com/sitemap.xml

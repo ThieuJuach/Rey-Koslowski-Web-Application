@@ -1,0 +1,63 @@
+# ─────────────────────────────────────────────────────────────
+# Credentials — never commit
+# ─────────────────────────────────────────────────────────────
+# Real secrets live here (DB password, SMTP password). The tracked
+# template is secrets.example.php; copy it to secrets.php and fill it in.
+secrets.php
+public_html/secrets.php
+.env
+.env.*
+*.pem
+*.key
+
+# ─────────────────────────────────────────────────────────────
+# Deployment archives / host artifacts
+# ─────────────────────────────────────────────────────────────
+# secrets.zip in particular contains a full copy of the credentials file.
+*.zip
+*.tar
+*.tar.gz
+*.gz
+DO_NOT_UPLOAD_HERE
+
+# ─────────────────────────────────────────────────────────────
+# Runtime state — generated on the server, never source
+# ─────────────────────────────────────────────────────────────
+public_html/logs/*
+!public_html/logs/.gitkeep
+
+# ─────────────────────────────────────────────────────────────
+# User-uploaded content
+# ─────────────────────────────────────────────────────────────
+# Managed through the admin panel and referenced by rows in the database,
+# so it is content rather than source: 14 MB of PDFs and photos that would
+# be meaningless without the matching database anyway.
+# Remove these lines if you would rather version the media with the code.
+public_html/uploads/*
+!public_html/uploads/.htaccess
+!public_html/uploads/images/
+public_html/uploads/images/*
+!public_html/uploads/pdfs/
+public_html/uploads/pdfs/*
+!public_html/uploads/videos/
+public_html/uploads/videos/*
+!public_html/uploads/**/.gitkeep
+
+# ─────────────────────────────────────────────────────────────
+# Editor / OS noise
+# ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# ─────────────────────────────────────────────────────────────
+# Local backups
+# ─────────────────────────────────────────────────────────────
+*.bak
+*.old
+*.orig
+*.sql.gz

@@ -1,0 +1,4 @@
+# Admin area: no directory listing, no caching of sensitive pages
+Options -Indexes
+Header always set Cache-Control "no-store, no-cache, must-revalidate"
+Header always set Pragma "no-cache"
