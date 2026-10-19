@@ -14,7 +14,6 @@ include 'includes/nav.php';
 $ongoingProjects = getResearchProjects('ongoing');
 $completedProjects = getResearchProjects('completed');
 $featuredImage = getPageFeaturedImage('research');
-$bgImage = $featuredImage ? SITE_URL . '/' . $featuredImage['image_path'] : '';
 ?>
 
 <div class="page-header <?= $featuredImage ? 'page-header--has-bg' : '' ?>"

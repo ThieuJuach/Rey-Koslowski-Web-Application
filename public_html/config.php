@@ -90,11 +90,9 @@ define('DB_CHARSET', 'utf8mb4');
 // ── Site Configuration ──
 define('SITE_URL', rtrim(secret('SITE_URL', 'https://darkblue-badger-609934.hostingersite.com'), '/'));
 define('SITE_TITLE', 'Rey Koslowski');
-define('SITE_SUBTITLE', 'Professor of Political Science');
 
 // ── File Upload Configuration ──
 define('UPLOAD_DIR', __DIR__ . '/uploads/');
-define('UPLOAD_URL', SITE_URL . '/uploads/');
 define('MAX_UPLOAD_SIZE', 20 * 1024 * 1024); // 20MB
 define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 define('ALLOWED_VIDEO_TYPES', ['video/mp4', 'video/webm', 'video/ogg']);

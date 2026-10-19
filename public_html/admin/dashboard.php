@@ -10,7 +10,6 @@ $projectCount = $pdo->query("SELECT COUNT(*) FROM research_projects")->fetchColu
 $courseCount = $pdo->query("SELECT COUNT(*) FROM courses")->fetchColumn();
 $mediaCount = $pdo->query("SELECT COUNT(*) FROM media_appearances")->fetchColumn();
 $uploadCount = $pdo->query("SELECT COUNT(*) FROM uploads")->fetchColumn();
-$facultyCount = $pdo->query("SELECT COUNT(*) FROM migration_faculty")->fetchColumn();
 
 // Presentations count (new)
 $presCount = 0;

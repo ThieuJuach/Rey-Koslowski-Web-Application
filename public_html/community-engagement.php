@@ -9,7 +9,6 @@ include 'includes/nav.php';
 $page = getPageContent('community-engagement');
 $items = getCommunityEngagementItems();
 $featuredImage = getPageFeaturedImage('community-engagement');
-$bgImage = $featuredImage ? SITE_URL . '/' . $featuredImage['image_path'] : '';
 ?>
 
 <div class="page-header <?= $featuredImage ? 'page-header--has-bg' : '' ?>"

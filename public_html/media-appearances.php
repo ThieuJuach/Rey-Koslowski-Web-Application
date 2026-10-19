@@ -13,7 +13,6 @@ include 'includes/nav.php';
 
 $mediaItems = getMediaAppearances();
 $featuredImage = getPageFeaturedImage('media-appearances');
-$bgImage = $featuredImage ? SITE_URL . '/' . $featuredImage['image_path'] : '';
 ?>
 
 <div class="page-header <?= $featuredImage ? 'page-header--has-bg' : '' ?>"

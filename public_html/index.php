@@ -21,11 +21,7 @@ $currentCourses = getCurrentCourses();
 $currentPubs = getCurrentPublications();
 $currentPresentations = getCurrentPresentations();
 $page = getPageContent('home');
-$featuredImage = getPageFeaturedImage('home');
 
-// Welcome message
-$welcomeMsg = getSetting('welcome_message', '');
-$welcomeEnabled = getSetting('welcome_message_enabled', '0');
 
 // Settings
 $siteTitle = getSetting('site_title', 'Rey Koslowski');
@@ -325,21 +321,42 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
     </div>
 </section>
 
-<!-- Floating Welcome Widget - shown from page load. It previously faded in only
-     while the full-screen hero was visible; the photo is now a side column, so
-     tying it to the image would hide the greeting on tall screens. -->
+<?php
+/*
+ * Floating welcome widget.
+ *
+ * Both the text and the on/off switch come from Admin -> Home / About. They were
+ * previously hard-coded here, which left that admin control doing nothing.
+ *
+ * Defaults are chosen so the widget cannot silently vanish: the toggle defaults
+ * to shown when the setting row is missing, and the original sentence is used
+ * when no message has been saved.
+ *
+ * It is shown from page load. It used to fade in only while the full-screen hero
+ * was visible; the photo is now a side column, so tying it to the image would
+ * hide the greeting on tall screens.
+ */
+$welcomeEnabled = getSetting('welcome_message_enabled', '1');
+$welcomeMsg     = trim(getSetting('welcome_message', ''));
+?>
+<?php if ($welcomeEnabled === '1'): ?>
 <div class="welcome-widget" id="welcomeWidget">
     <div class="welcome-widget__body" id="welcomeBody">
         <button class="welcome-widget__close" onclick="document.getElementById('welcomeBody').style.display='none';document.getElementById('welcomeToggle').style.display='flex';" aria-label="Minimize">&times;</button>
         <h4 class="welcome-widget__title">Welcome</h4>
         <div class="welcome-widget__text">
-            <p>Welcome to my personal academic website. Feel free to browse these books by authors who have influenced my thinking over the years.</p>
+            <?php if ($welcomeMsg !== ''): ?>
+                <?= formatText($welcomeMsg) ?>
+            <?php else: ?>
+                <p>Welcome to my personal academic website. Feel free to browse these books by authors who have influenced my thinking over the years.</p>
+            <?php endif; ?>
         </div>
     </div>
     <button class="welcome-widget__toggle" id="welcomeToggle" style="display:none;" onclick="document.getElementById('welcomeBody').style.display='block';this.style.display='none';" aria-label="Open welcome message">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     </button>
 </div>
+<?php endif; ?>
 
 </main>
 

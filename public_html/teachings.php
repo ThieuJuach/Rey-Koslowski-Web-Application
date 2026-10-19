@@ -15,7 +15,6 @@ $courses = getCourses();
 $ugCourses = array_filter($courses, fn($c) => $c['level'] === 'undergraduate');
 $gradCourses = array_filter($courses, fn($c) => $c['level'] === 'graduate');
 $featuredImage = getPageFeaturedImage('teaching');
-$bgImage = $featuredImage ? SITE_URL . '/' . $featuredImage['image_path'] : '';
 ?>
 
 <div class="page-header <?= $featuredImage ? 'page-header--has-bg' : '' ?>"

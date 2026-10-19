@@ -16,7 +16,6 @@ $articles      = array_filter($allPubs, fn($p) => $p['type'] === 'journal_articl
 $chapters      = array_filter($allPubs, fn($p) => $p['type'] === 'book_chapter');
 $others        = array_filter($allPubs, fn($p) => !in_array($p['type'], ['book', 'edited_volume', 'journal_article', 'book_chapter']));
 $featuredImage = getPageFeaturedImage('publications');
-$bgImage       = $featuredImage ? SITE_URL . '/' . $featuredImage['image_path'] : '';
 if ($featuredImage) $ogImage = SITE_URL . '/' . $featuredImage['image_path'];
 
 // Build ScholarlyArticle / Book structured data

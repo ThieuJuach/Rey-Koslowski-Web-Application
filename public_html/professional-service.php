@@ -9,7 +9,6 @@ include 'includes/nav.php';
 $page = getPageContent('professional-service');
 $items = getProfessionalServiceItems();
 $featuredImage = getPageFeaturedImage('professional-service');
-$bgImage = $featuredImage ? SITE_URL . '/' . $featuredImage['image_path'] : '';
 ?>
 
 <div class="page-header <?= $featuredImage ? 'page-header--has-bg' : '' ?>"

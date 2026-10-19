@@ -13,7 +13,6 @@ require_once 'includes/auth.php';
 $upcoming      = getPresentations('upcoming');
 $completed     = getPresentations('completed');
 $featuredImage = getPageFeaturedImage('presentations');
-$bgImage       = $featuredImage ? SITE_URL . '/' . $featuredImage['image_path'] : '';
 if ($featuredImage) $ogImage = SITE_URL . '/' . $featuredImage['image_path'];
 
 // Build Event structured data
