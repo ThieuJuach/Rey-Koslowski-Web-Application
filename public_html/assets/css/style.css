@@ -124,8 +124,8 @@ ul { list-style: none; }
 .nav__dropdown-link:hover { background: hsla(220, 55%, 22%, 0.05); color: var(--color-primary); }
 
 /* NOTE: the old `.page-header--home` hero block and `.page-header__affiliation`
-   rules were removed here. The home page has used `.home-hero` + `.home-identity`
-   for some time and no markup referenced those classes any more. */
+   rules were removed here. The home page intro now lives in `.home-intro`
+   (see "Home Intro" below); no markup references those classes any more. */
 
 /* CV action buttons in page header — left-aligned, responsive */
 .page-header__cv-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; justify-content: flex-start; }
@@ -148,73 +148,73 @@ ul { list-style: none; }
 .page-header--has-bg .page-header__cv-btn--download { border-color: var(--color-accent); color: var(--color-accent); text-shadow: none; }
 .page-header--has-bg .page-header__cv-btn--download:hover { background: var(--color-accent); color: #fff; }
 
-/* ─── Home Hero (Full-Screen Books) ─── */
-/*
- * The photo is a real <img> (see index.php), not a background-image, so it can be
- * preloaded and served responsively.
- *
- * Sizing: the source photo is 4:3. The hero takes that aspect ratio so the picture
- * fills the block exactly on most screens, and is capped at the viewport height so
- * it never pushes the rest of the page off-screen on tall/narrow displays.
- *
- * The inline base64 image below is a 24px-wide blurred copy of the same photo. It
- * does double duty: it paints instantly on the first frame (so the hero is never a
- * blank block while the real photo downloads), and on very wide screens it fills
- * the space either side of the contained photo, instead of leaving empty bars.
- */
-.home-hero {
+/* ─── Home Intro: identity left, books photo right ─── */
+
+.home-intro {
+    /* Mobile first: one column, identity above the photo, so a phone still
+       leads with the name. Becomes two columns at 1024px. */
+    display: grid;
+    grid-template-columns: 1fr;
+    background: var(--color-bg);
+}
+
+.home-intro__text {
+    /* Horizontal padding mirrors .container so the heading lines up with every
+       other page; the large top value clears the fixed navbar. */
+    padding: 6.5rem 1.5rem 2.5rem;
+}
+@media (min-width: 768px) {
+    .home-intro__text { padding: 8.5rem 3rem 3rem; }
+}
+
+.home-intro__media {
+    /* No aspect-ratio here on purpose. The height comes from the image itself
+       (see .home-intro__img), so the box IS the photo's shape by definition
+       rather than by two values happening to agree. That makes cropping
+       structurally impossible instead of merely unlikely.
+
+       The base64 is a 24px blurred copy of the photo (LQIP). It paints
+       instantly so the column is never an empty rectangle while the real file
+       arrives; the browser reserves the right space from the img's width/height
+       attributes, so nothing below shifts. */
     position: relative;
-    aspect-ratio: 4 / 3;
-    max-height: 100dvh;
-    width: 100%;
     background-color: hsl(38, 20%, 88%);
     background-image: url("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAASABgDASIAAhEBAxEB/8QAFwABAQEBAAAAAAAAAAAAAAAAAAMCBP/EACIQAAIBAwMFAQAAAAAAAAAAAAABAgMEERITMSEiM0Fxgf/EABYBAQEBAAAAAAAAAAAAAAAAAAEDAP/EABoRAQACAwEAAAAAAAAAAAAAAAABAhIxQTL/2gAMAwEAAhEDEQA/AOyVzKbapyWUSldVYLvaySp7aWpNmN6j7bbYHiqvarxhZ68AhayhGvnV7A4y2URtqHjXw5nyvoA8BR8v6AC9PKV9v//Z");
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    overflow: hidden;
-}
-/* The photo itself — contain guarantees the whole frame is visible, never cropped. */
-.home-hero__img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    object-position: center;
-    display: block;
-}
-/* NOTE: `.home-hero__welcome` was removed here — the welcome message is rendered by
-   the floating `.welcome-widget` in index.php, and no markup used this class. */
-.home-hero__scroll {
-    position: absolute;
-    bottom: 1.25rem;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255, 255, 255, 0.85);
-    z-index: 2;
-    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
-    animation: heroScrollBounce 2.2s ease-in-out infinite;
-}
-@keyframes heroScrollBounce {
-    0%, 100% { transform: translateX(-50%) translateY(0); opacity: 1; }
-    50% { transform: translateX(-50%) translateY(7px); opacity: 0.7; }
 }
 
-/* ─── Home Identity Section (name / role / affiliation / CV) ─── */
-.home-identity {
-    padding: 3rem 0 2.5rem;
-    background: var(--color-bg);
-    border-bottom: 1px solid var(--color-border);
+.home-intro__img {
+    /* height:auto means the element renders at the image's own intrinsic ratio,
+       so the whole photo is always visible - top to bottom and left to right.
+
+       This deliberately avoids object-fit. 'cover' would crop silently the
+       moment the box stopped being exactly 4:3 (a rounding error, a future
+       layout tweak), and 'contain' would letterbox instead. With no fixed
+       height there is nothing to crop against: the box is the picture. */
+    display: block;
+    width: 100%;
+    height: auto;
 }
-.home-identity__inner { max-width: 48rem; }
-/* Name on the landing page — scaled up so it reads as the primary identity on the
-   page. clamp() keeps it from overflowing on small screens. */
-.home-identity__name {
+
+@media (min-width: 1024px) {
+    .home-intro {
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+    }
+    .home-intro__text {
+        /* Align the text's left edge with .container (centred, 1200px, 3rem
+           gutter). max() keeps a sane gutter below 1200px. */
+        padding-top: 7rem;
+        padding-bottom: 4rem;
+        padding-left: max(3rem, calc((100vw - var(--container-max)) / 2 + 3rem));
+        padding-right: 3.5rem;
+    }
+}
+
+/* Identity typography - sizes carried over unchanged from the previous layout.
+   The CV buttons reuse the shared .page-header__cv-* rules. */
+.home-intro__name {
     font-size: clamp(2.5rem, 6.5vw, 4.75rem);
     font-weight: 700;
     letter-spacing: -0.03em;
@@ -222,14 +222,14 @@ ul { list-style: none; }
     color: var(--color-primary);
     margin-bottom: 0.75rem;
 }
-.home-identity__role {
+.home-intro__role {
     font-size: 1.0625rem;
     color: var(--color-accent);
     font-weight: 600;
     letter-spacing: 0.01em;
     margin-bottom: 0.4rem;
 }
-.home-identity__affil {
+.home-intro__affil {
     font-size: 0.9375rem;
     color: var(--color-muted);
     line-height: 1.6;

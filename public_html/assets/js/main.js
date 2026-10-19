@@ -4,24 +4,23 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- Navbar scroll behavior ---
+    /*
+     * --- Navbar ---
+     *
+     * This previously branched on a 'page-home' class to keep the navbar
+     * transparent over the full-screen hero until you scrolled 50px. That class
+     * was never actually set on <body> by any template, so the branch always took
+     * the "not home" path and the navbar has in practice always been solid.
+     *
+     * The home page now opens with the name and title on the page background
+     * rather than a photo, so a transparent navbar would be unreadable there
+     * anyway. The dead branch and its scroll listener are removed; the navbar is
+     * simply always solid, which is exactly how the site already behaved.
+     */
     const nav = document.getElementById('mainNav');
-    const isHomePage = document.body.classList.contains('page-home');
-
-    function handleScroll() {
-        if (window.scrollY > 50 || !isHomePage) {
-            nav.classList.add('nav--scrolled');
-        } else {
-            nav.classList.remove('nav--scrolled');
-        }
-    }
-
-    if (!isHomePage) {
+    if (nav) {
         nav.classList.add('nav--solid');
     }
-    
-    window.addEventListener('scroll', handleScroll);
-    handleScroll();
 
     // --- Mobile menu toggle ---
     const navToggle = document.getElementById('navToggle');

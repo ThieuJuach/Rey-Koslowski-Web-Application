@@ -67,22 +67,15 @@ enforceRateLimit('public_page', PUBLIC_PAGE_MAX_PER_MINUTE, 60, 'html');
 
     <meta name="referrer" content="strict-origin-when-cross-origin">
 
-    <?php if ($canonicalPage === 'index.php'): ?>
-    <!--
-      Preload the home-page hero photo. This is the Largest Contentful Paint element,
-      so starting its download in the <head> (rather than waiting for the CSS and the
-      <picture> element to be parsed) is the single biggest win for perceived speed.
-      imagesrcset/imagesizes mirror the <picture> in index.php exactly, so the browser
-      preloads the same file it will actually render — no double download.
-    -->
-    <link rel="preload" as="image" fetchpriority="high"
-          type="image/webp"
-          imagesizes="100vw"
-          imagesrcset="<?= SITE_URL ?>/uploads/images/hero/hero-960.webp 960w,
-                       <?= SITE_URL ?>/uploads/images/hero/hero-1440.webp 1440w,
-                       <?= SITE_URL ?>/uploads/images/hero/hero-1920.webp 1920w,
-                       <?= SITE_URL ?>/uploads/images/hero/hero-2560.webp 2560w">
-    <?php endif; ?>
+    <?php /*
+      The home-page books photo used to be preloaded with fetchpriority="high",
+      back when it was a full-screen hero and therefore the Largest Contentful
+      Paint element. It now sits BELOW the name and title, so the LCP element is
+      the heading text instead. Preloading the photo here would make it compete
+      with the stylesheet and fonts for bandwidth and delay the very content the
+      visitor sees first, so the preload has been removed on purpose.
+      The <picture> in index.php still serves responsive WebP/JPEG derivatives.
+    */ ?>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

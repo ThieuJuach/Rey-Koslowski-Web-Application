@@ -37,68 +37,71 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
 
 <main id="main-content">
 
-<!--
-  Full-Screen Books Hero
+<?php /*
+  Home intro: identity on the left, books photo on the right.
 
-  PERFORMANCE: previously this was a CSS background-image pointing at the original
-  4160x3120 / 3.5 MB JPEG. A background-image cannot be preloaded or served
-  responsively, so every visitor downloaded all 3.5 MB before seeing anything.
-  It is now a real <picture> element using pre-generated derivatives
-  (uploads/images/hero/), so the browser downloads only the size it needs
-  — roughly 93 KB on a phone and 250 KB on a desktop — and starts the request
-  immediately thanks to the matching <link rel="preload"> in includes/header.php.
+  LAYOUT: a two-column grid from 1024px up. Below that the columns stack with
+  the identity first, so a phone still leads with the name rather than a photo.
+  The text column is padded to line up with the site container while the photo
+  column runs to the right edge of the viewport, so the heading stays aligned
+  with every other page and the image still reads as full-bleed.
 
-  VISIBILITY: object-fit:contain (see .home-hero__img) shows the entire photo
-  top-to-bottom and left-to-right; the old background-size:cover cropped it.
--->
-<div class="home-hero home-hero--has-image" id="homeHero">
-    <picture>
-        <source
-            type="image/webp"
-            sizes="100vw"
-            srcset="<?= SITE_URL ?>/uploads/images/hero/hero-960.webp 960w,
-                    <?= SITE_URL ?>/uploads/images/hero/hero-1440.webp 1440w,
-                    <?= SITE_URL ?>/uploads/images/hero/hero-1920.webp 1920w,
-                    <?= SITE_URL ?>/uploads/images/hero/hero-2560.webp 2560w">
-        <img
-            class="home-hero__img"
-            src="<?= SITE_URL ?>/uploads/images/hero/hero-1440.jpg"
-            sizes="100vw"
-            srcset="<?= SITE_URL ?>/uploads/images/hero/hero-960.jpg 960w,
-                    <?= SITE_URL ?>/uploads/images/hero/hero-1440.jpg 1440w,
-                    <?= SITE_URL ?>/uploads/images/hero/hero-1920.jpg 1920w,
-                    <?= SITE_URL ?>/uploads/images/hero/hero-2560.jpg 2560w"
-            width="4160" height="3120"
-            alt="A shelf of books by authors who have influenced Rey Koslowski's thinking"
-            fetchpriority="high" decoding="async">
-    </picture>
-    <div class="home-hero__scroll" aria-hidden="true">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
-    </div>
-</div>
+  WHY THIS SHAPE: at half width the photo renders about 960x720 on a 1920
+  screen, instead of the 1920x1440 a full-width band produced, so the whole
+  intro fits above the fold. Nothing is cropped: the column is given the
+  photo's own 4:3 ratio.
 
-<!-- Identity Section (below the fold) -->
-<section class="home-identity">
-    <div class="container">
-        <div class="home-identity__inner">
-            <div class="page-header__divider"></div>
-            <h1 class="home-identity__name"><?= e($siteTitle) ?></h1>
-            <p class="home-identity__role"><?= e($siteSubtitle) ?></p>
-            <p class="home-identity__affil"><?= e($siteAffiliation) ?></p>
-            <?php if ($cvUrl || $cvFilePath): ?>
-            <div class="page-header__cv-actions">
-                <a href="#cv-viewer" class="page-header__cv-btn" onclick="document.getElementById('cv-viewer').style.display='block';window.scrollTo({top:document.getElementById('cv-viewer').offsetTop,behavior:'smooth'});return false;">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                    View CV
-                </a>
-                <a href="<?= e($cvSrc) ?>" download class="page-header__cv-btn page-header__cv-btn--download">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Download CV
-                </a>
-            </div>
-            <?php endif; ?>
+  PERFORMANCE: responsive WebP/JPEG derivatives in uploads/images/hero/ mean the
+  browser fetches only the width it needs, roughly 93 KB on a phone and 250 KB
+  on a desktop, against 3.5 MB for the original JPEG. "sizes" states the real
+  rendered width (half the viewport once side by side) so desktop does not
+  over-fetch. Deliberately not preloaded: the heading is the LCP element now,
+  and prioritising the image would starve the text seen first.
+*/ ?>
+<section class="home-intro" id="homeHero">
+
+    <div class="home-intro__text">
+        <div class="page-header__divider"></div>
+        <h1 class="home-intro__name"><?= e($siteTitle) ?></h1>
+        <p class="home-intro__role"><?= e($siteSubtitle) ?></p>
+        <p class="home-intro__affil"><?= e($siteAffiliation) ?></p>
+        <?php if ($cvUrl || $cvFilePath): ?>
+        <div class="page-header__cv-actions">
+            <a href="#cv-viewer" class="page-header__cv-btn" onclick="document.getElementById('cv-viewer').style.display='block';window.scrollTo({top:document.getElementById('cv-viewer').offsetTop,behavior:'smooth'});return false;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                View CV
+            </a>
+            <a href="<?= e($cvSrc) ?>" download class="page-header__cv-btn page-header__cv-btn--download">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download CV
+            </a>
         </div>
+        <?php endif; ?>
     </div>
+
+    <div class="home-intro__media">
+        <picture>
+            <source
+                type="image/webp"
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                srcset="<?= SITE_URL ?>/uploads/images/hero/hero-960.webp 960w,
+                        <?= SITE_URL ?>/uploads/images/hero/hero-1440.webp 1440w,
+                        <?= SITE_URL ?>/uploads/images/hero/hero-1920.webp 1920w,
+                        <?= SITE_URL ?>/uploads/images/hero/hero-2560.webp 2560w">
+            <img
+                class="home-intro__img"
+                src="<?= SITE_URL ?>/uploads/images/hero/hero-1440.jpg"
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                srcset="<?= SITE_URL ?>/uploads/images/hero/hero-960.jpg 960w,
+                        <?= SITE_URL ?>/uploads/images/hero/hero-1440.jpg 1440w,
+                        <?= SITE_URL ?>/uploads/images/hero/hero-1920.jpg 1920w,
+                        <?= SITE_URL ?>/uploads/images/hero/hero-2560.jpg 2560w"
+                width="4160" height="3120"
+                alt="A shelf of books by authors who have influenced Rey Koslowski's thinking"
+                decoding="async">
+        </picture>
+    </div>
+
 </section>
 
 <!-- CV Viewer -->
@@ -322,7 +325,9 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
     </div>
 </section>
 
-<!-- Floating Welcome Widget — visible only while the books photo is on screen -->
+<!-- Floating Welcome Widget - shown from page load. It previously faded in only
+     while the full-screen hero was visible; the photo is now a side column, so
+     tying it to the image would hide the greeting on tall screens. -->
 <div class="welcome-widget" id="welcomeWidget">
     <div class="welcome-widget__body" id="welcomeBody">
         <button class="welcome-widget__close" onclick="document.getElementById('welcomeBody').style.display='none';document.getElementById('welcomeToggle').style.display='flex';" aria-label="Minimize">&times;</button>
@@ -335,18 +340,6 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     </button>
 </div>
-<script>
-(function () {
-    var widget = document.getElementById('welcomeWidget');
-    var hero   = document.getElementById('homeHero');
-    if (!widget || !hero) return;
-    var observer = new IntersectionObserver(function (entries) {
-        widget.style.visibility = entries[0].isIntersecting ? 'visible' : 'hidden';
-        widget.style.opacity    = entries[0].isIntersecting ? '1' : '0';
-    }, { threshold: 0.05 });
-    observer.observe(hero);
-})();
-</script>
 
 </main>
 
