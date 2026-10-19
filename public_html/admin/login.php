@@ -132,8 +132,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="robots" content="noindex, nofollow">
     <title>Admin Login | <?= SITE_TITLE ?></title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/style.css">
-    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/admin.css">
+    <link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
+    <link rel="stylesheet" href="<?= asset('assets/css/admin.css') ?>">
     <style>
         .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--admin-bg); }
         .login-card { width: 100%; max-width: 420px; padding: 2.5rem; background: #fff; border-radius: 0.5rem; border: 1px solid var(--admin-border); box-shadow: var(--shadow-elevated); }

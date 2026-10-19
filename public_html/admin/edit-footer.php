@@ -49,8 +49,8 @@ $orcid = getSetting('orcid_url');
     <meta name="robots" content="noindex, nofollow">
     <title>Edit Footer | <?= SITE_TITLE ?> Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/style.css">
-    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/admin.css">
+    <link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
+    <link rel="stylesheet" href="<?= asset('assets/css/admin.css') ?>">
 </head>
 <body class="admin-body">
 <div class="admin-layout">

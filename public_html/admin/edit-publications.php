@@ -102,8 +102,8 @@ $pagePdfs = getPagePdfs('publications');
     <meta name="robots" content="noindex, nofollow">
     <title>Edit Publications | <?= SITE_TITLE ?> Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/style.css">
-    <link rel="stylesheet" href="<?= SITE_URL ?>/assets/css/admin.css">
+    <link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
+    <link rel="stylesheet" href="<?= asset('assets/css/admin.css') ?>">
 </head>
 <body class="admin-body">
     <div class="admin-layout">
@@ -225,6 +225,6 @@ $pagePdfs = getPagePdfs('publications');
         </div>
     </div>
     <script>const SITE_URL = '<?= SITE_URL ?>';</script>
-    <script src="<?= SITE_URL ?>/assets/js/admin.js"></script>
+    <script src="<?= asset('assets/js/admin.js') ?>"></script>
 </body>
 </html>

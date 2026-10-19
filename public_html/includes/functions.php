@@ -762,6 +762,29 @@ function handleFileUpload(array $file, string $subdir = 'images'): ?string {
     return null;
 }
 
+/**
+ * Build a URL for a static asset with a cache-busting version string.
+ *
+ * .htaccess tells browsers to cache CSS and JS for a week. Without a version
+ * string, a returning visitor keeps the old stylesheet while receiving freshly
+ * deployed HTML - so a markup change that renames CSS classes renders unstyled
+ * until their cache happens to expire. Appending the file's modification time
+ * changes the URL whenever the file changes, so a deploy invalidates the cache
+ * for exactly the files that moved and nothing else.
+ *
+ * Falls back to an unversioned URL if the file cannot be stat'ed, so a missing
+ * file can never take the page down.
+ *
+ * @param string $relPath Path below the web root, e.g. 'assets/css/style.css'
+ */
+function asset(string $relPath): string {
+    $relPath = ltrim($relPath, '/');
+    $full    = dirname(__DIR__) . '/' . $relPath;
+    $version = @filemtime($full);
+
+    return SITE_URL . '/' . $relPath . ($version ? '?v=' . $version : '');
+}
+
 function currentPage(): string {
     $script = basename($_SERVER['SCRIPT_NAME'], '.php');
     return $script === 'index' ? 'home' : $script;

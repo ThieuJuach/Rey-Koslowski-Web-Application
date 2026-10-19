@@ -115,6 +115,6 @@ $orcidUrl = getSetting('orcid_url');
     </div>
 </footer>
 
-<script src="<?= SITE_URL ?>/assets/js/main.js"></script>
+<script src="<?= asset('assets/js/main.js') ?>"></script>
 </body>
 </html>
