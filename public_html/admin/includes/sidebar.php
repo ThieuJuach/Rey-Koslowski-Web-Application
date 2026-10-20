@@ -15,6 +15,7 @@
         <a href="edit-professional-service.php" class="admin-sidebar__link <?= $adminPage === 'edit-professional-service' ? 'admin-sidebar__link--active' : '' ?>">⚖️ Prof. Service</a>
         <a href="edit-community-engagement.php" class="admin-sidebar__link <?= $adminPage === 'edit-community-engagement' ? 'admin-sidebar__link--active' : '' ?>">🤝 Community</a>
 
+        <a href="analytics.php" class="admin-sidebar__link <?= $adminPage === 'analytics' ? 'admin-sidebar__link--active' : '' ?>" style="margin-top: 0.5rem;">&#128200; Analytics</a>
         <a href="media-manager.php" class="admin-sidebar__link <?= $adminPage === 'media-manager' ? 'admin-sidebar__link--active' : '' ?>" style="margin-top: 0.5rem;">🖼 Media Manager</a>
         <a href="edit-footer.php" class="admin-sidebar__link <?= $adminPage === 'edit-footer' ? 'admin-sidebar__link--active' : '' ?>">📋 Footer</a>
         <a href="edit-contact.php" class="admin-sidebar__link <?= $adminPage === 'edit-contact' ? 'admin-sidebar__link--active' : '' ?>">✉️ Contact Info</a>

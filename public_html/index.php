@@ -118,7 +118,9 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
 <?php endif; ?>
 
 <!-- About Section: Text (70%) / Profile Photo (30%) -->
-<section class="section">
+<!-- id is used by the welcome widget's scroll fade (assets/js/main.js) to know
+     where the greeting should be fully faded out, and doubles as an anchor target. -->
+<section class="section" id="about">
     <div class="container">
         <div class="content-max">
             <div class="section__divider"></div>

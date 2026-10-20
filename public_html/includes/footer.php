@@ -115,6 +115,37 @@ $orcidUrl = getSetting('orcid_url');
     </div>
 </footer>
 
+<?php
+/*
+ * Cookie / analytics consent banner.
+ *
+ * Shown on every public page until a choice is recorded. The choice itself is
+ * kept in localStorage rather than a cookie, so a visitor who declines never has
+ * anything stored in their cookie jar at all.
+ *
+ * Nothing is measured before Accept is clicked: the analytics beacon in
+ * assets/js/main.js is gated on this decision, so Reject means no request is
+ * ever sent and no row is ever written.
+ *
+ * Rendered hidden and revealed by JS, so visitors who have already decided never
+ * see it flash on screen.
+ */
+?>
+<div class="consent-overlay" id="consentBanner" hidden>
+    <div class="consent" role="dialog" aria-modal="true"
+         aria-labelledby="consentTitle" aria-describedby="consentText">
+        <h2 class="consent__title" id="consentTitle">Before you continue</h2>
+        <p class="consent__text" id="consentText">
+            This site records anonymous page statistics to work out which pages are
+            useful. No personal data is collected and nothing is shared with anyone else.
+        </p>
+        <div class="consent__actions">
+            <button type="button" class="consent__btn" id="consentReject">Reject</button>
+            <button type="button" class="consent__btn consent__btn--accept" id="consentAccept">Accept</button>
+        </div>
+    </div>
+</div>
+
 <script src="<?= asset('assets/js/main.js') ?>"></script>
 </body>
 </html>

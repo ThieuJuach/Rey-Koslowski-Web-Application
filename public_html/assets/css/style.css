@@ -235,6 +235,115 @@ ul { list-style: none; }
     max-width: 42rem;
 }
 
+/* ─── Consent modal ─── */
+
+.consent-overlay {
+    /* Full-screen scrim that blurs and dims the page behind it. The visitor
+       must choose before anything else is reachable, so this deliberately
+       covers the whole viewport and swallows clicks. */
+    position: fixed;
+    inset: 0;
+    z-index: 1200;                 /* above the welcome widget (1000) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    animation: consentFade 0.25s ease-out;
+}
+/* The attribute selector outranks the display:flex above, so [hidden] wins. */
+.consent-overlay[hidden] { display: none; }
+
+@keyframes consentFade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.consent {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+    padding: 2rem;
+    max-width: 30rem;
+    width: 100%;
+    text-align: center;
+    animation: consentRise 0.28s ease-out;
+}
+@keyframes consentRise {
+    from { opacity: 0; transform: translateY(12px) scale(0.98); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* Respect a reduced-motion preference: show the dialog without animating it. */
+@media (prefers-reduced-motion: reduce) {
+    .consent-overlay, .consent { animation: none; }
+}
+
+.consent__title {
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-primary);
+    margin: 0 0 0.75rem;
+}
+.consent__text {
+    font-size: 0.875rem;
+    line-height: 1.7;
+    color: var(--color-muted);
+    margin: 0 0 1.75rem;
+}
+.consent__actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.consent__btn {
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.625rem 1.5rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.consent__btn:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+.consent__btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+.consent__btn--accept {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-primary-fg);
+}
+.consent__btn--accept:hover {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: #fff;
+}
+
+/* While the modal is open the page behind must not scroll. */
+body.consent-open { overflow: hidden; }
+
+@media (max-width: 480px) {
+    .consent { padding: 1.5rem; }
+    .consent__actions { flex-direction: column-reverse; }
+    .consent__btn { width: 100%; }
+}
+
 /* CV Viewer */
 .cv-viewer { padding: 3rem 0; background: var(--color-secondary); }
 .cv-viewer__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }

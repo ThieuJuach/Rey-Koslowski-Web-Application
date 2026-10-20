@@ -142,6 +142,22 @@ $aff3Url = getSetting('footer_affiliation_3_url');
     </div>
 </section>
 
+<?php // Consent banner - contact.php builds its own footer, so it is repeated here. ?>
+<div class="consent-overlay" id="consentBanner" hidden>
+    <div class="consent" role="dialog" aria-modal="true"
+         aria-labelledby="consentTitle" aria-describedby="consentText">
+        <h2 class="consent__title" id="consentTitle">Before you continue</h2>
+        <p class="consent__text" id="consentText">
+            This site records anonymous page statistics to work out which pages are
+            useful. No personal data is collected and nothing is shared with anyone else.
+        </p>
+        <div class="consent__actions">
+            <button type="button" class="consent__btn" id="consentReject">Reject</button>
+            <button type="button" class="consent__btn consent__btn--accept" id="consentAccept">Accept</button>
+        </div>
+    </div>
+</div>
+
 <script src="<?= asset('assets/js/main.js') ?>"></script>
 </body>
 </html>
