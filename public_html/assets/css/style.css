@@ -344,22 +344,24 @@ ul { list-style: none; }
 }
 .consent__status[hidden] { display: none; }
 
-/* "Cookie preferences" in the footer. Styled as a link rather than a button so
-   it sits quietly beside the copyright line instead of competing with it. */
+/* "Cookie preferences" sits inline at the end of the copyright line. font:inherit
+   and color:inherit make it take the footer's exact type scale, and because the
+   parent <p> already carries opacity 0.4 it reads as the same weight as the text
+   around it rather than as a separate control. Hover shifts hue instead of
+   opacity, since a child cannot brighten past its parent's opacity. */
 .footer__consent-link {
     background: none;
     border: none;
     padding: 0;
-    font-family: var(--font-sans);
-    font-size: inherit;
+    margin-left: 0.5rem;
+    font: inherit;
     color: inherit;
-    opacity: 0.75;
     text-decoration: underline;
     text-underline-offset: 2px;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: color 0.2s;
 }
-.footer__consent-link:hover { opacity: 1; }
+.footer__consent-link:hover { color: var(--color-accent); }
 .footer__consent-link:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;

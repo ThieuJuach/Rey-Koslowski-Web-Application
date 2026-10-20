@@ -136,15 +136,33 @@ document.addEventListener('DOMContentLoaded', () => {
     /*
      * --- Analytics consent + page-view beacon ---
      *
-     * Nothing is measured until the visitor clicks Accept. Reject is remembered
-     * and honoured permanently: no request is sent, so no row is ever written.
+     * Nothing is measured until the visitor clicks Accept. Reject is honoured
+     * for the rest of the session: no request is sent, so no row is written.
      *
-     * The decision is stored in localStorage rather than a cookie, so a visitor
-     * who declines ends up with nothing in their cookie jar at all. Every access
-     * is wrapped in try/catch because localStorage throws rather than returning
-     * null in some privacy modes - and a storage failure must never break the page.
+     * TWO PIECES OF STATE, deliberately:
+     *
+     *   rk-analytics-consent  (localStorage) - the choice itself. Kept so the
+     *       dialog can show "your current choice" and so the footer link has
+     *       something to display.
+     *
+     *   rk_consent_seen       (session cookie) - marks that the dialog has
+     *       already been shown in this browser session. It carries no value
+     *       beyond "1" and is deleted when the browser closes, which is what
+     *       produces the once-per-session prompt.
+     *
+     * A cookie is used for the session marker rather than sessionStorage
+     * because sessionStorage is scoped to a single tab: opening a link in a new
+     * tab would create fresh storage and re-prompt immediately. A session
+     * cookie is shared across tabs and cleared on browser close, which is the
+     * behaviour actually wanted. It is exempt from consent requirements itself,
+     * being strictly necessary to honour the visitor's own preference.
+     *
+     * Every storage access is wrapped in try/catch: localStorage throws rather
+     * than returning null in some privacy modes, and a storage failure must
+     * never break the page.
      */
-    const CONSENT_KEY = 'rk-analytics-consent';
+    const CONSENT_KEY  = 'rk-analytics-consent';
+    const SESSION_FLAG = 'rk_consent_seen';
 
     function readConsent() {
         try { return window.localStorage.getItem(CONSENT_KEY); }
@@ -152,7 +170,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function writeConsent(value) {
         try { window.localStorage.setItem(CONSENT_KEY, value); }
-        catch (e) { /* non-fatal: the banner simply reappears next visit */ }
+        catch (e) { /* non-fatal: the dialog simply reappears next visit */ }
+    }
+
+    /** Has the dialog already been shown in this browser session? */
+    function askedThisSession() {
+        return document.cookie.split('; ').indexOf(SESSION_FLAG + '=1') !== -1;
+    }
+
+    /** Mark the session. No Expires/Max-Age, so it dies with the browser. */
+    function markAskedThisSession() {
+        const secure = location.protocol === 'https:' ? '; Secure' : '';
+        document.cookie = SESSION_FLAG + '=1; Path=/; SameSite=Lax' + secure;
     }
 
     function sendPageView() {
@@ -186,11 +215,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const reject = document.getElementById('consentReject');
     const status = document.getElementById('consentStatus');
 
+    // Guards against counting the same page twice if the dialog is opened,
+    // dismissed and reopened within one page view.
+    let sentThisPage = false;
+
+    function sendPageViewOnce() {
+        if (sentThisPage) return;
+        sentThisPage = true;
+        sendPageView();
+    }
+
     function closeConsent() {
         if (!banner) return;
         banner.hidden = true;
         document.body.classList.remove('consent-open');
         document.removeEventListener('keydown', trapKeys, true);
+
+        // Dismissed without pressing a button (Escape on a re-ask). The previous
+        // choice still stands, so an existing Accept should still be honoured.
+        if (readConsent() === 'granted') sendPageViewOnce();
     }
 
     /*
@@ -251,7 +294,7 @@ document.addEventListener('DOMContentLoaded', () => {
         accept.addEventListener('click', function () {
             writeConsent('granted');
             closeConsent();
-            sendPageView();           // count the page they consented on
+            sendPageViewOnce();       // count the page they consented on
         });
     }
     if (reject) {
@@ -274,11 +317,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    /*
+     * On the first page of each browser session the dialog is shown, whether or
+     * not a choice already exists - a returning visitor may well feel
+     * differently than they did last time. If they already chose, the dialog
+     * says so and Escape dismisses it, leaving that choice untouched.
+     *
+     * For the rest of the session the stored choice is applied silently.
+     */
     const decision = readConsent();
-    if (decision === 'granted') {
-        sendPageView();
-    } else if (decision !== 'denied') {
-        openConsent(false);           // no choice recorded yet
+
+    if (!askedThisSession()) {
+        markAskedThisSession();
+        openConsent(decision !== null);   // show current choice if there is one
+    } else if (decision === 'granted') {
+        sendPageViewOnce();
     }
 
 });
