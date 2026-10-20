@@ -182,64 +182,103 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const banner = document.getElementById('consentBanner');
-    const decision = readConsent();
+    const accept = document.getElementById('consentAccept');
+    const reject = document.getElementById('consentReject');
+    const status = document.getElementById('consentStatus');
 
-    if (decision === 'granted') {
-        sendPageView();
-    } else if (decision !== 'denied' && banner) {
-        /*
-         * No decision yet: open the modal and block the page behind it until the
-         * visitor chooses. Rendering it hidden in the markup and unhiding here
-         * stops it flashing for visitors who already decided.
-         */
-        const accept = document.getElementById('consentAccept');
-        const reject = document.getElementById('consentReject');
+    function closeConsent() {
+        if (!banner) return;
+        banner.hidden = true;
+        document.body.classList.remove('consent-open');
+        document.removeEventListener('keydown', trapKeys, true);
+    }
 
-        function closeConsent() {
-            banner.hidden = true;
-            document.body.classList.remove('consent-open');
-            document.removeEventListener('keydown', trapKeys, true);
+    /*
+     * Keep focus inside the dialog while it is open.
+     *
+     * Tab cycles between the two buttons. Escape is swallowed on the first visit,
+     * because dismissing without choosing would leave the decision unrecorded and
+     * the modal would simply return on the next page. When the dialog has been
+     * reopened from the footer a choice already exists, so Escape just closes it.
+     */
+    let escapeCloses = false;
+
+    function trapKeys(e) {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            if (escapeCloses) closeConsent();
+            return;
         }
+        if (e.key !== 'Tab') return;
+        const focusable = [reject, accept].filter(Boolean);
+        if (!focusable.length) return;
+        const first = focusable[0];
+        const last  = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault(); last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault(); first.focus();
+        }
+    }
 
-        /*
-         * Keep focus inside the dialog while it is open.
-         *
-         * Tab cycles between the two buttons; Escape is swallowed rather than
-         * closing anything, because dismissing without choosing would leave the
-         * decision unrecorded and the modal would simply return on the next page.
-         */
-        function trapKeys(e) {
-            if (e.key === 'Escape') { e.preventDefault(); return; }
-            if (e.key !== 'Tab') return;
-            const focusable = [reject, accept].filter(Boolean);
-            if (!focusable.length) return;
-            const first = focusable[0];
-            const last  = focusable[focusable.length - 1];
-            if (e.shiftKey && document.activeElement === first) {
-                e.preventDefault(); last.focus();
-            } else if (!e.shiftKey && document.activeElement === last) {
-                e.preventDefault(); first.focus();
-            }
+    /**
+     * Show the dialog.
+     * @param {boolean} revisit true when reopened from the footer link, in which
+     *        case the current choice is shown and Escape is allowed to dismiss.
+     */
+    function openConsent(revisit) {
+        if (!banner) return;
+        escapeCloses = !!revisit;
+
+        if (status) {
+            const current = readConsent();
+            status.textContent = revisit && current
+                ? (current === 'granted'
+                    ? 'Your current choice: analytics allowed.'
+                    : 'Your current choice: analytics declined.')
+                : '';
+            status.hidden = !status.textContent;
         }
 
         banner.hidden = false;
         document.body.classList.add('consent-open');
         document.addEventListener('keydown', trapKeys, true);
         if (accept) accept.focus();
+    }
 
-        if (accept) {
-            accept.addEventListener('click', function () {
-                writeConsent('granted');
-                closeConsent();
-                sendPageView();           // count the page they consented on
-            });
-        }
-        if (reject) {
-            reject.addEventListener('click', function () {
-                writeConsent('denied');
-                closeConsent();           // nothing is sent, now or later
-            });
-        }
+    // Wired once, so the buttons work on the first visit and on every reopen.
+    if (accept) {
+        accept.addEventListener('click', function () {
+            writeConsent('granted');
+            closeConsent();
+            sendPageView();           // count the page they consented on
+        });
+    }
+    if (reject) {
+        reject.addEventListener('click', function () {
+            writeConsent('denied');
+            closeConsent();           // nothing further is sent
+        });
+    }
+
+    /*
+     * "Cookie preferences" in the footer. Consent has to be as easy to withdraw
+     * as it was to give, and without this the first click was permanent for the
+     * life of the browser profile.
+     */
+    const reopen = document.getElementById('consentReopen');
+    if (reopen) {
+        reopen.addEventListener('click', function (e) {
+            e.preventDefault();
+            openConsent(true);
+        });
+    }
+
+    const decision = readConsent();
+    if (decision === 'granted') {
+        sendPageView();
+    } else if (decision !== 'denied') {
+        openConsent(false);           // no choice recorded yet
     }
 
 });

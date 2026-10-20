@@ -335,6 +335,36 @@ ul { list-style: none; }
     color: #fff;
 }
 
+/* Current-choice line, shown only when the dialog is reopened from the footer. */
+.consent__status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-accent);
+    margin: -1rem 0 1.5rem;
+}
+.consent__status[hidden] { display: none; }
+
+/* "Cookie preferences" in the footer. Styled as a link rather than a button so
+   it sits quietly beside the copyright line instead of competing with it. */
+.footer__consent-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: var(--font-sans);
+    font-size: inherit;
+    color: inherit;
+    opacity: 0.75;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.footer__consent-link:hover { opacity: 1; }
+.footer__consent-link:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
 /* While the modal is open the page behind must not scroll. */
 body.consent-open { overflow: hidden; }
 

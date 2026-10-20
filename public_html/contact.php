@@ -137,6 +137,7 @@ $aff3Url = getSetting('footer_affiliation_3_url');
         </div>
         <div class="contact-footer-bottom">
             <p>&copy; <?= date('Y') ?> Rey Koslowski. All rights reserved.</p>
+                <button type="button" class="footer__consent-link" id="consentReopen">Cookie preferences</button>
             <p>University at Albany (SUNY) · Department of Political Science</p>
         </div>
     </div>
@@ -151,6 +152,8 @@ $aff3Url = getSetting('footer_affiliation_3_url');
             This site records anonymous page statistics to work out which pages are
             useful. No personal data is collected and nothing is shared with anyone else.
         </p>
+        <?php // Populated by JS only when the dialog is reopened from the footer. ?>
+        <p class="consent__status" id="consentStatus" hidden></p>
         <div class="consent__actions">
             <button type="button" class="consent__btn" id="consentReject">Reject</button>
             <button type="button" class="consent__btn consent__btn--accept" id="consentAccept">Accept</button>
