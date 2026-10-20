@@ -674,8 +674,27 @@ a.current-item__title:hover { color: var(--color-accent); }
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     border: none;
 }
-.video-embed--inline { padding-bottom: 0; height: auto; }
-.video-embed--inline video { position: static; border-radius: var(--radius); }
+/*
+ * Directly-hosted video (an uploaded .mp4/.webm/.ogg rather than a YouTube or
+ * Vimeo embed). The 16:9 padding trick above does not apply, because the file's
+ * own aspect ratio is unknown and may be anything.
+ *
+ * max-height caps portrait footage: a 9:16 phone video at full column width
+ * would otherwise render over 1200px tall and dominate the page. object-fit
+ * keeps it letterboxed inside that cap rather than stretched, and the black
+ * backdrop makes the letterboxing look deliberate.
+ */
+.video-embed--inline { padding-bottom: 0; height: auto; background: #000; }
+.video-embed--inline video {
+    position: static;
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 70vh;
+    object-fit: contain;
+    background: #000;
+    border-radius: var(--radius);
+}
 
 /* ─── PDF Viewer ─── */
 .pdf-inline { margin: 1rem 0; }

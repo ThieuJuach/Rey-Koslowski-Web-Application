@@ -94,10 +94,12 @@ define('SITE_TITLE', 'Rey Koslowski');
 // ── File Upload Configuration ──
 define('UPLOAD_DIR', __DIR__ . '/uploads/');
 define('MAX_UPLOAD_SIZE', 20 * 1024 * 1024); // 20MB
-define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
-define('ALLOWED_VIDEO_TYPES', ['video/mp4', 'video/webm', 'video/ogg']);
-define('ALLOWED_DOC_TYPES', ['application/pdf']);
-define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'webm', 'ogg', 'pdf']);
+
+// Permitted upload types are defined by allowedUploadKinds() in
+// includes/functions.php, which maps each extension to the MIME types finfo may
+// report for it. They used to be four separate constants here, but those became
+// a second, drifting source of truth once uploads started being validated from
+// file contents rather than the browser-declared type, so they were removed.
 
 // ── Rate Limiting ──
 // Defaults are deliberately generous for humans and tight for scripts.

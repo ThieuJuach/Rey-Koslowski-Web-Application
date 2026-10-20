@@ -710,56 +710,299 @@ function getProfileImage(): ?array {
 /**
  * Securely handle file upload with validation
  */
+/**
+ * Map each permitted extension to the MIME types finfo may legitimately report
+ * for it, and the kind of asset it represents.
+ *
+ * Browsers vary in the Content-Type they attach and finfo is occasionally
+ * conservative with container formats, so both this and a signature check are
+ * applied rather than either alone. Anything not listed here cannot be uploaded.
+ */
+function allowedUploadKinds(): array {
+    return [
+        'jpg'  => ['mimes' => ['image/jpeg'], 'kind' => 'image'],
+        'jpeg' => ['mimes' => ['image/jpeg'], 'kind' => 'image'],
+        'png'  => ['mimes' => ['image/png'],  'kind' => 'image'],
+        'gif'  => ['mimes' => ['image/gif'],  'kind' => 'image'],
+        'webp' => ['mimes' => ['image/webp'], 'kind' => 'image'],
+        'mp4'  => ['mimes' => ['video/mp4', 'application/mp4'],          'kind' => 'video'],
+        'webm' => ['mimes' => ['video/webm', 'application/octet-stream'], 'kind' => 'video'],
+        'ogg'  => ['mimes' => ['video/ogg', 'audio/ogg', 'application/ogg'], 'kind' => 'video'],
+        'pdf'  => ['mimes' => ['application/pdf'], 'kind' => 'pdf'],
+    ];
+}
+
+/**
+ * Confirm a file's leading bytes match the container its extension claims.
+ *
+ * finfo alone is not quite enough for video: some encoders produce files it
+ * reports as application/octet-stream. Reading the signature directly is both
+ * stricter and less likely to reject a legitimate upload.
+ */
+function hasExpectedSignature(string $tmpPath, string $ext): bool {
+    $fh = @fopen($tmpPath, 'rb');
+    if (!$fh) return false;
+    $head = fread($fh, 16);
+    fclose($fh);
+    if ($head === false || strlen($head) < 8) return false;
+
+    switch ($ext) {
+        case 'jpg':
+        case 'jpeg': return str_starts_with($head, "\xFF\xD8\xFF");
+        case 'png':  return str_starts_with($head, "\x89PNG\r\n\x1A\n");
+        case 'gif':  return str_starts_with($head, 'GIF87a') || str_starts_with($head, 'GIF89a');
+        case 'webp': return str_starts_with($head, 'RIFF') && substr($head, 8, 4) === 'WEBP';
+        case 'pdf':  return str_starts_with($head, '%PDF-');
+        case 'mp4':  return substr($head, 4, 4) === 'ftyp';          // ISO base media
+        case 'webm': return str_starts_with($head, "\x1A\x45\xDF\xA3"); // EBML
+        case 'ogg':  return str_starts_with($head, 'OggS');
+    }
+    return false;
+}
+
+/**
+ * Largest dimension an uploaded photo is kept at.
+ *
+ * Nothing in the layout displays an image wider than the full-bleed hero, and
+ * the pre-generated hero derivatives top out at 2560px, so anything beyond this
+ * is bytes the visitor downloads and the browser then throws away.
+ */
+define('MAX_IMAGE_DIMENSION', 2560);
+
+/**
+ * Re-encode an uploaded image in place, from its decoded pixels.
+ *
+ * This is the step that makes a "polyglot" upload harmless. A file can be a
+ * genuine JPEG — correct signature, correct finfo type, parses cleanly — and
+ * still carry arbitrary bytes appended after the image data. Every validation
+ * based on reading the file will pass it. Decoding to a pixel buffer and
+ * writing a fresh file keeps only the pixels, so anything trailing is gone.
+ *
+ * Three useful side effects:
+ *   - EXIF is dropped, including GPS coordinates that phones embed in photos.
+ *     Publishing those alongside an image is a real privacy leak.
+ *   - Oversized photos are scaled down to MAX_IMAGE_DIMENSION, so a 6000px
+ *     camera original cannot bloat a page or overflow a layout slot.
+ *   - EXIF orientation is applied, so portrait phone photos are no longer
+ *     displayed on their side.
+ *
+ * Animated GIFs are deliberately left untouched: GD would flatten them to a
+ * single frame, which would silently destroy the upload. They still had to pass
+ * the signature, finfo and getimagesize checks to get here.
+ *
+ * Returns true if the file is safe to keep (whether or not it was rewritten).
+ */
+function sanitiseUploadedImage(string $path, string $ext): bool {
+    if (!extension_loaded('gd')) {
+        // Without GD the file is kept as validated. Execution in uploads/ is
+        // disabled by .htaccess, so a trailing payload is inert either way.
+        error_log('[upload] GD unavailable; image kept without re-encoding');
+        return true;
+    }
+
+    // Animated GIF: leave alone rather than flatten it.
+    if ($ext === 'gif') {
+        $blob = @file_get_contents($path);
+        if ($blob !== false && substr_count($blob, "\x00\x21\xF9\x04") > 1) {
+            return true;
+        }
+    }
+
+    $info = @getimagesize($path);
+    if ($info === false) return false;
+    [$width, $height] = $info;
+    if ($width < 1 || $height < 1) return false;
+
+    switch ($ext) {
+        case 'jpg':
+        case 'jpeg': $src = @imagecreatefromjpeg($path); break;
+        case 'png':  $src = @imagecreatefrompng($path);  break;
+        case 'gif':  $src = @imagecreatefromgif($path);  break;
+        case 'webp': $src = function_exists('imagecreatefromwebp')
+                          ? @imagecreatefromwebp($path) : null; break;
+        default:     return true;   // not an image we handle
+    }
+    if (!$src) {
+        error_log('[upload] could not decode image for re-encoding');
+        return false;
+    }
+
+    // Apply EXIF orientation before scaling, so the rotation is baked in.
+    if (($ext === 'jpg' || $ext === 'jpeg') && function_exists('exif_read_data')) {
+        $exif = @exif_read_data($path);
+        $orientation = (int) ($exif['Orientation'] ?? 1);
+        if (in_array($orientation, [3, 6, 8], true)) {
+            $angle = $orientation === 3 ? 180 : ($orientation === 6 ? -90 : 90);
+            $rotated = @imagerotate($src, $angle, 0);
+            if ($rotated) {
+                imagedestroy($src);
+                $src = $rotated;
+                $width  = imagesx($src);
+                $height = imagesy($src);
+            }
+        }
+    }
+
+    // Scale down only; never enlarge a small image.
+    $scale = min(1, MAX_IMAGE_DIMENSION / max($width, $height));
+    $tw = max(1, (int) round($width * $scale));
+    $th = max(1, (int) round($height * $scale));
+
+    $dst = imagecreatetruecolor($tw, $th);
+    if (!$dst) { imagedestroy($src); return false; }
+
+    // Keep transparency for the formats that support it.
+    if (in_array($ext, ['png', 'gif', 'webp'], true)) {
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+        $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
+        imagefilledrectangle($dst, 0, 0, $tw, $th, $transparent);
+    }
+
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $tw, $th, $width, $height);
+
+    $ok = false;
+    switch ($ext) {
+        case 'jpg':
+        case 'jpeg': $ok = imagejpeg($dst, $path, 85); break;
+        case 'png':  $ok = imagepng($dst, $path, 6);   break;
+        case 'gif':  $ok = imagegif($dst, $path);      break;
+        case 'webp': $ok = function_exists('imagewebp') ? imagewebp($dst, $path, 85) : false; break;
+    }
+
+    imagedestroy($src);
+    imagedestroy($dst);
+
+    if (!$ok) {
+        error_log('[upload] re-encode failed for .' . $ext);
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Securely handle a file upload and record it in the uploads table.
+ *
+ * Returns the stored path relative to the web root, or null if the file was
+ * rejected. Callers show a generic message; the specific reason is logged.
+ *
+ * VALIDATION ORDER (OWASP Unrestricted File Upload):
+ *   1. A genuine, successful upload
+ *   2. Size within limits, measured on disk rather than taken from the request
+ *   3. Extension on the allowlist
+ *   4. The REAL MIME type, read from the contents with finfo, is one this
+ *      extension is permitted to be
+ *   5. Leading bytes match the expected container signature
+ *   6. Images must additionally parse as images
+ *
+ * Step 4 is the substantive change. The previous version checked $file['type'],
+ * which the browser supplies in the multipart body and a client can set to
+ * anything. The extension allowlist and the uploads .htaccess meant it was not
+ * exploitable in practice, but the MIME check itself was decorative; it is now
+ * derived from the file's own bytes.
+ */
 function handleFileUpload(array $file, string $subdir = 'images'): ?string {
     $subdir = preg_replace('/[^a-zA-Z0-9_-]/', '', $subdir);
-    
+
     $uploadDir = UPLOAD_DIR . $subdir . '/';
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
 
+    // 1. A genuine, successful upload.
+    if (!isset($file['tmp_name'], $file['name'], $file['error'])) return null;
     if ($file['error'] !== UPLOAD_ERR_OK) return null;
-    if ($file['size'] > MAX_UPLOAD_SIZE) return null;
-    if ($file['size'] === 0) return null;
-
-    $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-    if (!in_array($ext, ALLOWED_EXTENSIONS, true)) return null;
-    
-    $allowedMimes = array_merge(ALLOWED_IMAGE_TYPES, ALLOWED_VIDEO_TYPES, ALLOWED_DOC_TYPES);
-    if (!in_array($file['type'], $allowedMimes, true)) return null;
-    
-    // For images, verify actual content with getimagesize
-    if (in_array($file['type'], ALLOWED_IMAGE_TYPES, true)) {
-        $imageInfo = @getimagesize($file['tmp_name']);
-        if ($imageInfo === false) return null;
+    if (!is_uploaded_file($file['tmp_name'])) {
+        error_log('[upload] rejected: not an uploaded file');
+        return null;
     }
-    
-    $filename = bin2hex(random_bytes(16)) . '.' . $ext;
+
+    // 2. Size on disk; the value in the request is client-controlled.
+    $size = @filesize($file['tmp_name']);
+    if ($size === false || $size === 0 || $size > MAX_UPLOAD_SIZE) {
+        error_log('[upload] rejected: size ' . var_export($size, true));
+        return null;
+    }
+
+    // 3. Extension allowlist.
+    $ext   = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $kinds = allowedUploadKinds();
+    if (!isset($kinds[$ext])) {
+        error_log('[upload] rejected: extension .' . $ext);
+        return null;
+    }
+
+    // 4. Real MIME type, read from the contents.
+    $realMime = '';
+    if (function_exists('finfo_open')) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        if ($finfo) {
+            $realMime = (string) finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+        }
+    }
+    if ($realMime !== '' && !in_array($realMime, $kinds[$ext]['mimes'], true)) {
+        error_log('[upload] rejected: .' . $ext . ' reported as ' . $realMime);
+        return null;
+    }
+
+    // 5. Container signature.
+    if (!hasExpectedSignature($file['tmp_name'], $ext)) {
+        error_log('[upload] rejected: signature mismatch for .' . $ext);
+        return null;
+    }
+
+    $fileType = $kinds[$ext]['kind'];
+
+    // 6. Images must actually parse.
+    if ($fileType === 'image' && @getimagesize($file['tmp_name']) === false) {
+        error_log('[upload] rejected: unreadable image');
+        return null;
+    }
+
+    // Random name: the original is never used on disk, so a crafted filename
+    // cannot traverse directories or overwrite an existing file.
+    $filename    = bin2hex(random_bytes(16)) . '.' . $ext;
     $destination = $uploadDir . $filename;
 
-    if (move_uploaded_file($file['tmp_name'], $destination)) {
-        global $pdo;
-        $fileType = 'other';
-        if (in_array($file['type'], ALLOWED_IMAGE_TYPES)) $fileType = 'image';
-        elseif (in_array($file['type'], ALLOWED_VIDEO_TYPES)) $fileType = 'video';
-        elseif (in_array($file['type'], ALLOWED_DOC_TYPES)) $fileType = 'pdf';
-
-        $originalName = sanitizeInput(basename($file['name']), 255);
-
-        $stmt = $pdo->prepare("INSERT INTO uploads (filename, original_name, file_type, mime_type, file_size, file_path, uploaded_by) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([
-            $filename,
-            $originalName,
-            $fileType,
-            $file['type'],
-            $file['size'],
-            'uploads/' . $subdir . '/' . $filename,
-            $_SESSION['admin_id'] ?? null
-        ]);
-
-        return 'uploads/' . $subdir . '/' . $filename;
+    if (!move_uploaded_file($file['tmp_name'], $destination)) {
+        error_log('[upload] move_uploaded_file failed');
+        return null;
     }
-    return null;
+    @chmod($destination, 0644);   // never executable
+
+    /*
+     * Re-encode images from their decoded pixels. A file can be a genuine image
+     * and still carry appended bytes that every read-based check accepts; only
+     * rewriting it from pixels removes them. Also strips EXIF (GPS included),
+     * caps the dimensions, and applies orientation. See sanitiseUploadedImage().
+     */
+    if ($fileType === 'image' && !sanitiseUploadedImage($destination, $ext)) {
+        @unlink($destination);          // never leave a file we could not sanitise
+        error_log('[upload] rejected: image failed sanitisation');
+        return null;
+    }
+    // Size is re-read: re-encoding usually changes it.
+    $size = @filesize($destination) ?: $size;
+
+    global $pdo;
+    $relPath = 'uploads/' . $subdir . '/' . $filename;
+
+    $stmt = $pdo->prepare(
+        "INSERT INTO uploads (filename, original_name, file_type, mime_type, file_size, file_path, uploaded_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?)"
+    );
+    $stmt->execute([
+        $filename,
+        sanitizeInput(basename($file['name']), 255),
+        $fileType,
+        $realMime !== '' ? $realMime : $kinds[$ext]['mimes'][0],
+        $size,
+        $relPath,
+        $_SESSION['admin_id'] ?? null,
+    ]);
+
+    return $relPath;
 }
 
 /**

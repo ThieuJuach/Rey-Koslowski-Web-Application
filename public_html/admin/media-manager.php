@@ -60,6 +60,9 @@ function deleteUploadedFile(string $relativePath): void {
     }
 }
 
+// Set when a video/PDF upload succeeds, so the path can be shown for copying.
+$uploadedPath = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
 
@@ -98,6 +101,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $d['image_type'] ?: 'featured',
                 ]);
                 $success = 'Image uploaded and assigned to page.';
+            } else {
+                $error = 'Upload failed. Check the file type and that it is under 20MB.';
+            }
+        }
+
+    } elseif ($action === 'upload_media' && !empty($_FILES['media']['name'])) {
+        /*
+         * Upload a video or PDF to the shared library.
+         *
+         * Unlike images these are not assigned to a page slug: they are
+         * referenced by pasting their path into a "Video URL" or PDF field on
+         * the relevant edit screen. The resulting path is shown after upload so
+         * it can be copied straight out.
+         *
+         * handleFileUpload() decides the destination from the extension it has
+         * already validated, so a caller cannot steer the write location.
+         */
+        $ext = strtolower(pathinfo($_FILES['media']['name'], PATHINFO_EXTENSION));
+        if (in_array($ext, ['mp4', 'webm', 'ogg'], true)) {
+            $subdir = 'videos';
+        } elseif ($ext === 'pdf') {
+            $subdir = 'pdfs';
+        } else {
+            $subdir = '';
+            $error  = 'Please choose an MP4, WebM or OGG video, or a PDF.';
+        }
+
+        if ($subdir !== '') {
+            $path = handleFileUpload($_FILES['media'], $subdir);
+            if ($path) {
+                $uploadedPath = $path;   // surfaced in the UI for copy-paste
+                $success = 'Uploaded. Copy the path below into the relevant field.';
             } else {
                 $error = 'Upload failed. Check the file type and that it is under 20MB.';
             }
@@ -192,11 +227,15 @@ function formatBytes($bytes): string {
                 <div class="form-group"><label class="form-label">Image File</label><input class="form-input" type="file" name="image" accept="image/*" required></div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
                     <div class="form-group"><label class="form-label">Image Type</label>
+                        <?php /* Only "featured" and "profile" are read by the public
+                                 pages. Gallery and Content are stored but nothing
+                                 renders them, so they are labelled rather than left
+                                 looking functional. */ ?>
                         <select class="form-select" name="image_type">
-                            <option value="featured">Featured Image</option>
-                            <option value="profile">Profile Photo</option>
-                            <option value="gallery">Gallery</option>
-                            <option value="content">Content Image</option>
+                            <option value="featured">Featured Image &mdash; shown at the top of the page</option>
+                            <option value="profile">Profile Photo &mdash; shown in the About section</option>
+                            <option value="gallery">Gallery &mdash; stored only, not displayed</option>
+                            <option value="content">Content Image &mdash; stored only, not displayed</option>
                         </select>
                     </div>
                     <div class="form-group"><label class="form-label">Alt Text</label><input class="form-input" type="text" name="alt_text" maxlength="300"></div>
@@ -209,7 +248,32 @@ function formatBytes($bytes): string {
             </form>
         </div>
 
-        <div class="admin-card">
+                <div class="admin-card">
+            <div class="admin-card__header"><h2 class="admin-card__title">Upload a Video or PDF</h2></div>
+            <p style="color:var(--color-muted);font-size:0.8125rem;margin-bottom:1rem;">
+                Videos and PDFs are not tied to one page. Upload here, then paste the
+                path it gives you into a &ldquo;Video URL&rdquo; or PDF field on any edit
+                screen. MP4, WebM, OGG or PDF, up to 20MB.
+            </p>
+            <?php if ($uploadedPath): ?>
+            <div class="alert alert--success" style="word-break:break-all;">
+                Uploaded to <code><?= e($uploadedPath) ?></code><br>
+                Full URL: <code><?= e(SITE_URL . '/' . $uploadedPath) ?></code>
+            </div>
+            <?php endif; ?>
+            <form method="POST" enctype="multipart/form-data">
+                <?= csrfField() ?>
+                <input type="hidden" name="action" value="upload_media">
+                <div class="form-group">
+                    <label class="form-label">Video or PDF file</label>
+                    <input class="form-input" type="file" name="media"
+                           accept="video/mp4,video/webm,video/ogg,application/pdf" required>
+                </div>
+                <button type="submit" class="btn btn--primary">Upload</button>
+            </form>
+        </div>
+
+<div class="admin-card">
             <div class="admin-card__header"><h2 class="admin-card__title">Images on "<?= e(ucfirst(str_replace('-', ' ', $selectedPage))) ?>" (<?= count($pageImages) ?>)</h2></div>
             <?php if (empty($pageImages)): ?>
             <p style="color:var(--color-muted);font-size:0.875rem;">No images assigned yet.</p>

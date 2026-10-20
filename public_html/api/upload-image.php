@@ -65,12 +65,26 @@ if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
     exit;
 }
 
-// Declared MIME is attacker-controlled, so it is only a first filter here;
-// handleFileUpload() re-checks the extension and sniffs real image content.
-$allowedTypes = array_merge(ALLOWED_IMAGE_TYPES, ALLOWED_DOC_TYPES);
-if (!in_array($file['type'], $allowedTypes, true)) {
+/*
+ * Cheap pre-filter on the extension so an obviously wrong file is rejected
+ * before it is written anywhere.
+ *
+ * This deliberately does NOT look at $file['type']: that value comes from the
+ * browser and is both spoofable and unreliable - some browsers report
+ * application/octet-stream for perfectly valid files, which caused legitimate
+ * uploads to be refused here. handleFileUpload() is the authority; it reads the
+ * real type from the file's own bytes.
+ */
+$ext      = strtolower(pathinfo($file['name'] ?? '', PATHINFO_EXTENSION));
+$expected = $type === 'pdf' ? ['pdf'] : ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+if (!in_array($ext, $expected, true)) {
     http_response_code(415);
-    echo json_encode(['success' => false, 'error' => 'File type not allowed']);
+    echo json_encode([
+        'success' => false,
+        'error'   => $type === 'pdf'
+            ? 'Please choose a PDF file.'
+            : 'Please choose a JPG, PNG, GIF or WebP image.',
+    ]);
     exit;
 }
 
