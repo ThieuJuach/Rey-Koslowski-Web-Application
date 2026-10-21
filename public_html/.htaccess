@@ -31,6 +31,14 @@ RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 # changes. The .xml URL is preserved because it is already submitted to Search Console.
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 
+# ── Keep non-production hosts out of search results ──
+# The staging site runs the identical codebase, so without this it would serve
+# the same crawl-permitting robots.txt and compete with the real domain. Any
+# host other than the canonical one gets a Disallow-all file instead.
+RewriteCond %{HTTP_HOST} !^reykoslowski\.com$ [NC]
+RewriteCond %{HTTP_HOST} !^www\.reykoslowski\.com$ [NC]
+RewriteRule ^robots\.txt$ robots-staging.txt [L]
+
 # ── Custom error pages (SEO: return real 404s, not soft 404s) ──
 ErrorDocument 404 /404.php
 

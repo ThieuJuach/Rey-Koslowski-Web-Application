@@ -88,7 +88,10 @@ define('DB_PASS',    secret('DB_PASS', null, true));
 define('DB_CHARSET', 'utf8mb4');
 
 // ── Site Configuration ──
-define('SITE_URL', rtrim(secret('SITE_URL', 'https://darkblue-badger-609934.hostingersite.com'), '/'));
+// Canonical production domain. Each environment overrides this with its own
+// SITE_URL in secrets.php - staging sets the hostingersite address - so this
+// value is only the fallback used when the key is absent.
+define('SITE_URL', rtrim(secret('SITE_URL', 'https://reykoslowski.com'), '/'));
 define('SITE_TITLE', 'Rey Koslowski');
 
 // ── File Upload Configuration ──

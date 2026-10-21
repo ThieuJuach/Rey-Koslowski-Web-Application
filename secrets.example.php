@@ -31,7 +31,7 @@ return [
     // Drives canonical URLs, the sitemap, Open Graph tags and the noreply
     // sender address. Set this before doing any SEO work — change it later
     // and every indexed URL moves.
-    'SITE_URL' => 'https://example.com',
+    'SITE_URL' => 'https://reykoslowski.com',
 
     /*
      * ── Outbound email (admin 2FA codes) ─────────────────────────────────
@@ -42,7 +42,7 @@ return [
      * admin panel.
      *
      * To use authenticated SMTP (recommended):
-     *   1. Create a mailbox on the domain, e.g. noreply@example.com
+     *   1. Create a mailbox on the domain, e.g. noreply@reykoslowski.com
      *   2. Put that mailbox's password in SMTP_PASS
      *   3. Admin → Security → "Send me a test code" to confirm it arrives
      *
@@ -50,7 +50,7 @@ return [
      */
     'SMTP_HOST' => '',   // e.g. 'smtp.hostinger.com'
     'SMTP_PORT' => '465',
-    'SMTP_USER' => '',   // full mailbox address, e.g. 'noreply@example.com'
+    'SMTP_USER' => '',   // full mailbox address, e.g. 'noreply@reykoslowski.com'
     'SMTP_PASS' => '',   // that mailbox's password
 
     // Visible sender. Should match SMTP_USER when SMTP is in use so that

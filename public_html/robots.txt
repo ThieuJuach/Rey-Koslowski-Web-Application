@@ -15,4 +15,4 @@ Disallow: /includes/
 # they are now crawlable. Videos stay blocked; they are large and not indexable text.
 Disallow: /uploads/videos/
 
-Sitemap: https://darkblue-badger-609934.hostingersite.com/sitemap.xml
+Sitemap: https://reykoslowski.com/sitemap.xml

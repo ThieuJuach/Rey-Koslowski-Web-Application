@@ -1,0 +1,9 @@
+# Served instead of robots.txt on any host that is not the canonical domain
+# (see the rewrite in .htaccess).
+#
+# The staging copy is a byte-for-byte clone of production. If search engines
+# indexed it, the two would compete for the same queries and Google would have
+# to guess which is authoritative - which is exactly the duplicate-content
+# problem that damages the real site's ranking.
+User-agent: *
+Disallow: /
