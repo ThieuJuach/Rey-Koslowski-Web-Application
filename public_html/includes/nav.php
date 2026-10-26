@@ -29,6 +29,27 @@
             </div>
 
             <a href="<?= SITE_URL ?>/contact.php" class="nav__link <?= $current === 'contact' ? 'nav__link--active' : '' ?>">Contact</a>
+
+            <?php /*
+                Site search. A real GET form, so it works with scripting
+                disabled - the magnifier is then simply a submit button and the
+                field is reachable by tab. main.js only adds the expand/collapse
+                behaviour on top of that.
+            */ ?>
+            <form class="nav__search" id="navSearch" method="GET"
+                  action="<?= SITE_URL ?>/search.php" role="search">
+                <label class="sr-only" for="navSearchField">Search this site</label>
+                <input class="nav__search-field" type="search" id="navSearchField"
+                       name="q" maxlength="100" placeholder="Search…"
+                       value="<?= e($_GET['q'] ?? '') ?>">
+                <button class="nav__search-toggle" type="submit" id="navSearchToggle"
+                        aria-label="Search" aria-expanded="false">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+                    </svg>
+                </button>
+            </form>
         </div>
     </div>
 </nav>

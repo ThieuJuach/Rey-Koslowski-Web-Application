@@ -54,6 +54,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             if ($eventDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $eventDate)) $eventDate = null;
 
+            /*
+             * Optional image. handleFileUpload() verifies the file from its own
+             * bytes and re-encodes it, so nothing here needs to trust the name
+             * or the browser-declared type. Keeping the existing path when no
+             * new file is chosen is what stops an edit from silently dropping
+             * the current image.
+             */
+            $imagePath = sanitizeInput($_POST['existing_image_path'] ?? '', 500);
+            if (!empty($_FILES['cover_image']['name'])) {
+                $uploaded = handleFileUpload($_FILES['cover_image'], 'images');
+                if ($uploaded) {
+                    // Remove the file being replaced so uploads/ does not accrete orphans.
+                    if ($imagePath !== '') deleteUploadedFile($imagePath);
+                    $imagePath = $uploaded;
+                } else {
+                    $error = 'The image was rejected - use a JPG, PNG, GIF or WebP under 20MB.';
+                }
+            }
+            if (!empty($_POST['remove_image']) && $imagePath !== '') {
+                deleteUploadedFile($imagePath);
+                $imagePath = '';
+            }
+
             $editId = sanitizeInt($_POST['edit_id'] ?? 0, 0);
             if ($editId) {
                 $stmt = $pdo->prepare("UPDATE community_engagement_items SET title=?, content=?, excerpt=?, category=?, event_date=?, location=?, link_url=?, display_order=?, updated_at=NOW() WHERE id=?");
@@ -96,7 +119,7 @@ $items = $pdo->query("SELECT * FROM community_engagement_items ORDER BY display_
             <!-- Page Intro -->
             <div class="admin-card">
                 <div class="admin-card__header"><h2 class="admin-card__title">Page Introduction (optional)</h2></div>
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
                     <?= csrfField() ?>
                     <div class="form-group">
                         <textarea class="form-textarea" name="page_content" rows="6"><?= e($page['content'] ?? '') ?></textarea>
@@ -111,7 +134,7 @@ $items = $pdo->query("SELECT * FROM community_engagement_items ORDER BY display_
                     <h2 class="admin-card__title"><?= $editItem ? 'Edit Item' : 'Add Engagement Item' ?></h2>
                     <?php if ($editItem): ?><a href="edit-community-engagement.php" class="btn btn--outline">Cancel Edit</a><?php endif; ?>
                 </div>
-                <form method="POST">
+                <form method="POST" enctype="multipart/form-data">
                     <?= csrfField() ?>
                     <?php if ($editItem): ?><input type="hidden" name="edit_id" value="<?= $editItem['id'] ?>"><?php endif; ?>
                     <div class="form-group">
@@ -150,6 +173,19 @@ $items = $pdo->query("SELECT * FROM community_engagement_items ORDER BY display_
                             <input class="form-input" type="number" name="display_order" value="<?= e($editItem['display_order'] ?? 0) ?>" min="0">
                         </div>
                     </div>
+                    <?php // Optional image for this item, shown beside its text on the public page. ?>
+                    <div class="form-group">
+                        <label class="form-label">Image (optional)</label>
+                        <?php if (!empty($editItem['image_path'])): ?>
+                            <img src="<?= SITE_URL . '/' . e($editItem['image_path']) ?>" alt=""
+                                 style="max-width:180px;height:auto;border-radius:0.375rem;display:block;margin-bottom:0.5rem;">
+                            <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8125rem;margin-bottom:0.5rem;">
+                                <input type="checkbox" name="remove_image" value="1"> Remove this image
+                            </label>
+                        <?php endif; ?>
+                        <input type="hidden" name="existing_image_path" value="<?= e($editItem['image_path'] ?? '') ?>">
+                        <input class="form-input" type="file" name="cover_image" accept="image/*">
+                    </div>
                     <button type="submit" name="save_item" class="btn btn--primary"><?= $editItem ? 'Update' : 'Add' ?> Item</button>
                 </form>
             </div>
@@ -168,7 +204,7 @@ $items = $pdo->query("SELECT * FROM community_engagement_items ORDER BY display_
                             <td><?= $item['event_date'] ? date('M j, Y', strtotime($item['event_date'])) : '—' ?></td>
                             <td style="white-space:nowrap;">
                                 <a href="?edit=<?= $item['id'] ?>" class="btn btn--outline" style="padding:0.25rem 0.75rem;font-size:0.75rem;">Edit</a>
-                                <form method="POST" style="display:inline;" onsubmit="return confirm('Delete?')">
+                                <form method="POST" enctype="multipart/form-data" style="display:inline;" onsubmit="return confirm('Delete?')">
                                     <?= csrfField() ?>
                                     <input type="hidden" name="delete_id" value="<?= $item['id'] ?>">
                                     <button type="submit" class="btn btn--danger" style="padding:0.25rem 0.75rem;font-size:0.75rem;">Delete</button>

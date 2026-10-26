@@ -59,6 +59,11 @@ $featuredImage = getPageFeaturedImage('community-engagement');
                         <span class="blog-post-card__date"><?= e($item['location']) ?></span>
                         <?php endif; ?>
                     </div>
+                    <?php if (!empty($item['image_path'])): ?>
+                    <img class="blog-post-card__media"
+                         src="<?= SITE_URL . '/' . e($item['image_path']) ?>"
+                         alt="<?= e($item['title']) ?>" loading="lazy">
+                    <?php endif; ?>
                     <h3 class="blog-post-card__title">
                         <?php if ($item['link_url']): ?>
                         <a href="<?= e($item['link_url']) ?>" target="_blank" rel="noopener"><?= e($item['title']) ?></a>

@@ -334,6 +334,55 @@ document.addEventListener('DOMContentLoaded', () => {
         sendPageViewOnce();
     }
 
+
+    /*
+     * --- Navbar search ---
+     *
+     * The form submits on its own, so this only manages the expand/collapse.
+     * First click opens the field and focuses it; submitting is only allowed
+     * once something has been typed, so the magnifier cannot fire an empty
+     * search. With scripting off the field is simply always visible via CSS.
+     */
+    const navSearch = document.getElementById('navSearch');
+    const navSearchToggle = document.getElementById('navSearchToggle');
+    const navSearchField = document.getElementById('navSearchField');
+
+    if (navSearch && navSearchToggle && navSearchField) {
+        // Open it straight away if a term is already present (a results page).
+        if (navSearchField.value.trim() !== '') {
+            navSearch.classList.add('nav__search--open');
+            navSearchToggle.setAttribute('aria-expanded', 'true');
+        }
+
+        navSearchToggle.addEventListener('click', function (e) {
+            const isOpen = navSearch.classList.contains('nav__search--open');
+            if (!isOpen || navSearchField.value.trim() === '') {
+                e.preventDefault();                 // do not submit an empty query
+                navSearch.classList.add('nav__search--open');
+                navSearchToggle.setAttribute('aria-expanded', 'true');
+                navSearchField.focus();
+            }
+            // otherwise fall through and let the form submit
+        });
+
+        // Clicking away closes it again, unless something has been typed.
+        document.addEventListener('click', function (e) {
+            if (navSearch.contains(e.target)) return;
+            if (navSearchField.value.trim() !== '') return;
+            navSearch.classList.remove('nav__search--open');
+            navSearchToggle.setAttribute('aria-expanded', 'false');
+        });
+
+        navSearchField.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                navSearchField.value = '';
+                navSearch.classList.remove('nav__search--open');
+                navSearchToggle.setAttribute('aria-expanded', 'false');
+                navSearchToggle.focus();
+            }
+        });
+    }
+
 });
 
 /*
