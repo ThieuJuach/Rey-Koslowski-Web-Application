@@ -705,93 +705,272 @@ function getProfileImage(): ?array {
    (blog_posts, galleries, gallery_images, service_items) are untouched, so the
    helpers can be restored from version history if those features are ever built. */
 
-// ── Page Introductions ──────────────────────────────────────────────────────
 //
 // Every public page can carry an optional intro paragraph, stored as a row in
 // `pages` and edited from that page's admin screen. The pair below exists so the
-// behaviour is defined once: seven templates and seven admin screens would
 // otherwise each repeat the same markup, validation and upsert.
 
 /**
- * Render a page's introduction, or '' when none is set.
+ * Delete a file from disk, but only if it genuinely resolves inside uploads/.
  *
- * Returning an empty string for a missing or blank row is what lets the block be
- * deployed before any content exists: the page looks exactly as it did before.
+ * Lives here rather than in one admin screen because several callers need it:
+ * the media manager, and the featured-block editor on every page.
+ * realpath() never returns a trailing separator, so comparing against
+ * $uploadsDir + separator is enough to require a true child path and stops a
+ * sibling directory such as "uploads-old" from matching.
  */
-function renderPageIntro(string $slug): string {
-    $page = getPageContent($slug);
-    if (!$page || trim((string) ($page['content'] ?? '')) === '') return '';
-    return '<div class="prose" style="margin-bottom: 3rem;">'
-         . formatText($page['content'])
-         . '</div>';
+function deleteUploadedFile(string $relativePath): void {
+    if (strpos($relativePath, '..') !== false || !str_starts_with($relativePath, 'uploads/')) {
+        return;
+    }
+    $real       = realpath(UPLOAD_DIR . '/../' . $relativePath);
+    $uploadsDir = realpath(UPLOAD_DIR);
+    if ($real && $uploadsDir && str_starts_with($real, $uploadsDir . DIRECTORY_SEPARATOR)) {
+        @unlink($real);
+    }
+}
+
+// ── Featured Blocks ─────────────────────────────────────────────────────────
+//
+// An optional highlighted panel sitting between a page's header and its first
+// section: a card holding rich text, links and an image.
+//
+// STORAGE. Text lives in `pages` under the slug "featured-<page>" and the image
+// in `page_images` under the same slug. The image_type column is an ENUM
+// without a 'block' member - MySQL silently stores '' for an unknown value
+// when not in strict mode - so these rows reuse 'featured' and are
+// identified by the slug prefix instead. The prefix is
+// deliberate. An earlier attempt stored this under the bare page slug, which
+// collided with placeholder rows already present in production - "Selected
+// publications.", "Contact information." and similar had been sitting unused in
+// that table, and giving them somewhere to render surfaced them all at once.
+// A separate namespace makes that impossible.
+
+/**
+ * Tags permitted inside a featured block.
+ *
+ * Wider than ALLOWED_HTML_TAGS because this panel is meant to carry images, but
+ * still an allowlist: no <script>, <iframe>, <object>, <form> or <style>.
+ */
+define('FEATURED_BLOCK_TAGS',
+    '<a><p><br><strong><b><em><i><ul><ol><li><h3><h4><h5><h6>'
+  . '<blockquote><span><sub><sup><hr><img><figure><figcaption>');
+
+/**
+ * Sanitise featured-block HTML.
+ *
+ * Runs the same hardening as formatText() - tag allowlist, on* handlers
+ * stripped, javascript:/data: URIs neutralised - and then additionally
+ * constrains every <img> to an image this site actually hosts. A remote src
+ * would leak visitors' IPs to a third party and lets the panel break if that
+ * host disappears, so anything not under uploads/ is dropped.
+ */
+function formatFeaturedBlock(string $text): string {
+    if (trim($text) === '') return '';
+
+    $text = strip_tags($text, FEATURED_BLOCK_TAGS);
+
+    // Event handlers and scriptable URIs (OWASP XSS prevention).
+    $text = preg_replace('/\s+on\w+\s*=\s*["\'][^"\']*["\']/i', '', $text);
+    $text = preg_replace('/\s+on\w+\s*=\s*\S+/i', '', $text);
+    $text = preg_replace('/(href|src)\s*=\s*["\']?\s*javascript\s*:/i', '$1="', $text);
+    $text = preg_replace('/(href|src)\s*=\s*["\']?\s*data\s*:/i', '$1="', $text);
+    $text = preg_replace('/\s+style\s*=\s*["\'][^"\']*expression[^"\']*["\']/i', '', $text);
+
+    // Drop any <img> whose src is not a file hosted here.
+    $text = preg_replace_callback('/<img\b[^>]*>/i', function ($m) {
+        if (!preg_match('/\ssrc\s*=\s*["\']([^"\']+)["\']/i', $m[0], $src)) return '';
+        $url = trim($src[1]);
+        $host = parse_url(SITE_URL, PHP_URL_HOST);
+        $ok = str_starts_with($url, 'uploads/')
+           || str_starts_with($url, '/uploads/')
+           || ($host && str_starts_with($url, SITE_URL . '/uploads/'));
+        if (!$ok) return '';
+        // Rebuild from scratch: keeps src and alt, discards every other attribute.
+        $alt = preg_match('/\salt\s*=\s*["\']([^"\']*)["\']/i', $m[0], $a) ? $a[1] : '';
+        return '<img src="' . e($url) . '" alt="' . e($alt) . '" loading="lazy">';
+    }, $text);
+
+    // Paragraph handling, matching formatText().
+    if (stripos($text, '<p>') !== false || stripos($text, '<p ') !== false) return $text;
+    $paras = preg_split('/\n\s*\n/', $text);
+    if (count($paras) > 1) {
+        $html = '';
+        foreach ($paras as $p) {
+            $p = trim($p);
+            if ($p !== '') $html .= '<p>' . nl2br($p) . '</p>';
+        }
+        return $html;
+    }
+    return nl2br($text);
 }
 
 /**
- * Handle a submitted introduction. Call early, before any output is sent.
+ * Render a page's featured block, or '' when there is nothing to show.
  *
- * Returns a message for the page to display, or '' when this request was not an
- * intro save — so a caller can write `$success = handlePageIntroSave(...) ?: $success;`
- * without disturbing its own handlers.
- *
- * Guards its own CSRF and rate limit rather than relying on the caller's, because
- * the admin screens differ in how they gate POSTs: some require $_POST['action'],
- * others accept any POST.
+ * Returning '' for an empty or missing row is what keeps the panel invisible
+ * until someone actually writes something.
  */
-function handlePageIntroSave(string $slug, string $label): string {
-    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['save_intro'])) {
-        return '';
-    }
-    requireCsrf();
-    enforceRateLimit('admin_intro', 30, 60, 'html');
+function renderFeaturedBlock(string $page): string {
+    $slug = 'featured-' . $page;
 
-    /*
-     * Only page_content is passed in, rather than all of $_POST.
-     *
-     * validateSchema() rejects fields it was not told about, and treats just
-     * csrf_token and action as structural. This form's submit button is named
-     * save_intro, which would therefore be reported as an unexpected field.
-     * Handing over an explicit single-key array is clearer than widening that
-     * shared allowlist for one form, and keeps the strict-rejection behaviour
-     * intact everywhere else.
-     *
-     * 'html' => true keeps the safe-tag allowlist, so links and emphasis survive
-     * while anything scriptable is stripped by formatText() at render time.
-     */
-    $v = validateSchema(
-        ['page_content' => (string) ($_POST['page_content'] ?? '')],
-        ['page_content' => ['type' => 'string', 'max' => MAX_TEXTAREA_LENGTH, 'html' => true]]
-    );
-    if (!$v['ok']) {
-        return 'Could not save the introduction: ' . implode('; ', $v['errors']);
-    }
+    $row  = getPageContent($slug);
+    $body = $row ? formatFeaturedBlock((string) $row['content']) : '';
 
     global $pdo;
     $stmt = $pdo->prepare(
-        "INSERT INTO pages (slug, title, content) VALUES (?, ?, ?)
-         ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = NOW()"
+        "SELECT image_path, alt_text, caption FROM page_images
+         WHERE page_slug = ? AND image_type = 'featured' AND is_visible = 1
+         ORDER BY display_order ASC LIMIT 1"
     );
-    $stmt->execute([$slug, $label, $v['data']['page_content']]);
-    return 'Introduction saved.';
+    $stmt->execute([$slug]);
+    $img = $stmt->fetch() ?: null;
+
+    if ($body === '' && !$img) return '';   // nothing set: show nothing at all
+
+    $html = '<div class="container"><div class="content-max">'
+          . '<div class="featured-block">';
+
+    if ($img) {
+        $html .= '<figure class="featured-block__figure">'
+               . '<img src="' . e(SITE_URL . '/' . $img['image_path']) . '" '
+               . 'alt="' . e($img['alt_text'] ?? '') . '" loading="lazy" '
+               . 'class="featured-block__img">';
+        if (!empty($img['caption'])) {
+            $html .= '<figcaption class="featured-block__caption">' . e($img['caption']) . '</figcaption>';
+        }
+        $html .= '</figure>';
+    }
+
+    if ($body !== '') {
+        $html .= '<div class="featured-block__text prose">' . $body . '</div>';
+    }
+
+    return $html . '</div></div></div>';
 }
 
 /**
- * The admin editor card for a page introduction.
+ * Handle a submitted featured block. Call before any output.
+ *
+ * Returns a message for the caller to display, or '' when this request was not
+ * a featured-block submission. Guards its own CSRF and rate limit, because the
+ * admin screens differ in how they gate POSTs.
  */
-function renderPageIntroCard(string $slug, string $label): string {
-    $page    = getPageContent($slug);
-    $current = e((string) ($page['content'] ?? ''));
+function handleFeaturedBlockSave(string $page, string $label): string {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['save_featured'])) {
+        return '';
+    }
+    requireCsrf();
+    enforceRateLimit('admin_featured', 30, 60, 'html');
+
+    $slug = 'featured-' . $page;
+    global $pdo;
+
+    // Only the text field is validated here; the file arrives via $_FILES and is
+    // handled by handleFileUpload(), which verifies it from its own bytes.
+    $v = validateSchema(
+        ['block_content' => (string) ($_POST['block_content'] ?? '')],
+        ['block_content' => ['type' => 'string', 'max' => MAX_TEXTAREA_LENGTH, 'html' => true]]
+    );
+    if (!$v['ok']) {
+        return 'Could not save: ' . implode('; ', $v['errors']);
+    }
+
+    $pdo->prepare(
+        "INSERT INTO pages (slug, title, content) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = NOW()"
+    )->execute([$slug, $label . ' feature', $v['data']['block_content']]);
+
+    $notes = ['Featured block saved.'];
+
+    // Remove the image if asked, before considering a replacement.
+    if (!empty($_POST['remove_block_image'])) {
+        $q = $pdo->prepare("SELECT image_path FROM page_images WHERE page_slug = ? AND image_type = 'featured'");
+        $q->execute([$slug]);
+        foreach ($q->fetchAll() as $old) {
+            deleteUploadedFile($old['image_path']);
+        }
+        $pdo->prepare("DELETE FROM page_images WHERE page_slug = ? AND image_type = 'featured'")->execute([$slug]);
+        $notes[] = 'Image removed.';
+    }
+
+    if (!empty($_FILES['block_image']['name'])) {
+        $path = handleFileUpload($_FILES['block_image'], 'images');
+        if ($path) {
+            // One image per block: clear any previous before inserting.
+            $pdo->prepare("DELETE FROM page_images WHERE page_slug = ? AND image_type = 'featured'")->execute([$slug]);
+            $pdo->prepare(
+                "INSERT INTO page_images (page_slug, image_path, alt_text, caption, image_type)
+                 VALUES (?, ?, ?, ?, 'featured')"
+            )->execute([
+                $slug,
+                $path,
+                sanitizeInput($_POST['block_image_alt'] ?? '', 300),
+                sanitizeInput($_POST['block_image_caption'] ?? '', 500),
+            ]);
+            $notes[] = 'Image uploaded.';
+        } else {
+            $notes[] = 'The image was rejected - check it is a JPG, PNG, GIF or WebP under 20MB.';
+        }
+    }
+
+    return implode(' ', $notes);
+}
+
+/**
+ * The admin editor for a featured block.
+ */
+function renderFeaturedBlockCard(string $page, string $label): string {
+    $slug = 'featured-' . $page;
+    $row  = getPageContent($slug);
+    $text = e((string) ($row['content'] ?? ''));
+
+    global $pdo;
+    $stmt = $pdo->prepare(
+        "SELECT image_path, alt_text, caption FROM page_images
+         WHERE page_slug = ? AND image_type = 'featured' LIMIT 1"
+    );
+    $stmt->execute([$slug]);
+    $img = $stmt->fetch() ?: null;
+
+    $existing = '';
+    if ($img) {
+        $existing = '<div class="form-group">'
+                  . '<label class="form-label">Current image</label>'
+                  . '<img src="' . e(SITE_URL . '/' . $img['image_path']) . '" '
+                  . 'style="max-width:220px;height:auto;border-radius:0.375rem;display:block;margin-bottom:0.5rem;">'
+                  . '<label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8125rem;">'
+                  . '<input type="checkbox" name="remove_block_image" value="1"> Remove this image'
+                  . '</label></div>';
+    }
 
     return '<div class="admin-card">'
-         . '<div class="admin-card__header"><h2 class="admin-card__title">Page Introduction</h2></div>'
+         . '<div class="admin-card__header"><h2 class="admin-card__title">Featured Block</h2></div>'
          . '<p style="color:var(--color-muted);font-size:0.8125rem;margin-bottom:1rem;">'
-         . 'Appears at the top of the public ' . e($label) . ' page, above everything else. '
-         . 'Leave blank to hide it entirely. Separate paragraphs with a blank line.</p>'
-         . '<form method="POST">'
+         . 'A highlighted panel shown near the top of the public ' . e($label) . ' page, '
+         . 'between the heading and the content below it. Leave everything blank and '
+         . 'nothing appears. Blank lines separate paragraphs; links are allowed, and you '
+         . 'can attach one image.</p>'
+         . '<form method="POST" enctype="multipart/form-data">'
          . csrfField()
          . '<div class="form-group">'
-         . '<textarea class="form-textarea" name="page_content" rows="14">' . $current . '</textarea>'
-         . '</div>'
-         . '<button type="submit" name="save_intro" value="1" class="btn btn--primary">Save Introduction</button>'
+         . '<label class="form-label" for="block_content_' . e($page) . '">Text</label>'
+         . '<textarea class="form-textarea" id="block_content_' . e($page) . '" '
+         . 'name="block_content" rows="10" '
+         . 'placeholder="Plain text is fine. For a link: &lt;a href=&quot;https://example.com&quot;&gt;link text&lt;/a&gt;">'
+         . $text . '</textarea></div>'
+         . $existing
+         . '<div class="form-group">'
+         . '<label class="form-label">' . ($img ? 'Replace image' : 'Image (optional)') . '</label>'
+         . '<input class="form-input" type="file" name="block_image" accept="image/*"></div>'
+         . '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">'
+         . '<div class="form-group"><label class="form-label">Image alt text</label>'
+         . '<input class="form-input" type="text" name="block_image_alt" maxlength="300" value="'
+         . e($img['alt_text'] ?? '') . '"></div>'
+         . '<div class="form-group"><label class="form-label">Image caption</label>'
+         . '<input class="form-input" type="text" name="block_image_caption" maxlength="500" value="'
+         . e($img['caption'] ?? '') . '"></div></div>'
+         . '<button type="submit" name="save_featured" value="1" class="btn btn--primary">Save Featured Block</button>'
          . '</form></div>';
 }
 

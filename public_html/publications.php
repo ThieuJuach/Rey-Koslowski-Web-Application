@@ -66,11 +66,13 @@ include 'includes/nav.php';
     </div>
 </div>
 
+<?php // Optional highlighted panel. Renders nothing unless text or an
+      // image has been set in the admin for this page. ?>
+<?= renderFeaturedBlock('publications') ?>
+
 <section class="section">
     <div class="container">
         <div class="content-max">
-            <?= renderPageIntro('publications') ?>
-
             <?php if (!empty($allPubs)): ?>
 
             <?php if (!empty($books)): ?>

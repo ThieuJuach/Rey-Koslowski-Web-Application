@@ -43,12 +43,15 @@ $aff3Url = getSetting('footer_affiliation_3_url');
     </div>
 </div>
 
+
+<?php // Optional highlighted panel. Renders nothing unless text or an
+      // image has been set in the admin for this page. ?>
+<?= renderFeaturedBlock('contact') ?>
+
 <!-- Contact Details Section -->
 <section class="section section--dark">
     <div class="container">
         <div class="content-max">
-            <?= renderPageIntro('contact') ?>
-
             <div class="contact-grid">
                 <div>
                     <p class="text-lg" style="color: rgba(255,255,255,0.8); margin-bottom: 2rem; line-height: 1.8;">

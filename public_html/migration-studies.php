@@ -36,12 +36,15 @@ $featuredImage = getPageFeaturedImage('migration-studies');
     </div>
 </div>
 
+
+<?php // Optional highlighted panel. Renders nothing unless text or an
+      // image has been set in the admin for this page. ?>
+<?= renderFeaturedBlock('migration-studies') ?>
+
 <!-- Faculty -->
 <section class="section">
     <div class="container">
         <div class="content-max">
-            <?= renderPageIntro('migration-studies') ?>
-
             <div class="section__divider"></div>
             <h2 class="section__title">Faculty</h2>
             <p class="text-muted" style="margin-bottom: 1.5rem;">Faculty with research and/or teaching interests related to international migration and refugees:</p>

@@ -40,11 +40,13 @@ $featuredImage = getPageFeaturedImage('research');
     </div>
 </div>
 
+<?php // Optional highlighted panel. Renders nothing unless text or an
+      // image has been set in the admin for this page. ?>
+<?= renderFeaturedBlock('research') ?>
+
 <section class="section">
     <div class="container">
         <div class="content-max">
-
-            <?= renderPageIntro('research') ?>
 
             <div class="section__divider"></div>
             <h2 class="section__title">Ongoing Projects</h2>

@@ -376,6 +376,60 @@ body.consent-open { overflow: hidden; }
     .consent__btn { width: 100%; }
 }
 
+/* ─── Featured Block ─── */
+/* A highlighted panel between a page's header and its first section. Styled on
+   .card so it reads as part of the same family: same card background, border,
+   radius and soft shadow, with the accent top-border the cards use on hover
+   made permanent here, since this panel is meant to draw the eye. */
+.featured-block {
+    background: var(--color-card);
+    border: 1px solid var(--color-border);
+    border-top: 3px solid var(--color-accent);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-soft);
+    padding: 1.75rem 2rem;
+    margin: 2.5rem 0 0;
+    display: grid;
+    gap: 1.5rem;
+}
+@media (min-width: 768px) {
+    .featured-block { padding: 2.25rem 2.5rem; }
+    /* With an image present, sit it beside the text rather than above it. */
+    .featured-block:has(.featured-block__figure) {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 18rem);
+        align-items: start;
+        gap: 2rem;
+    }
+    /* Text first in the source for screen readers and for the no-image case;
+       the image is placed to its right visually. */
+    .featured-block__figure { grid-column: 2; grid-row: 1; }
+    .featured-block__text   { grid-column: 1; grid-row: 1; }
+}
+
+.featured-block__figure { margin: 0; }
+.featured-block__img {
+    width: 100%;
+    height: auto;              /* intrinsic ratio: never cropped, never squashed */
+    display: block;
+    border-radius: var(--radius);
+}
+.featured-block__caption {
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+/* Images pasted into the body text, as opposed to the attached one. */
+.featured-block__text img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+    margin: 1rem 0;
+}
+.featured-block__text > :first-child { margin-top: 0; }
+.featured-block__text > :last-child  { margin-bottom: 0; }
+
 /* CV Viewer */
 .cv-viewer { padding: 3rem 0; background: var(--color-secondary); }
 .cv-viewer__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }

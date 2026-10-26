@@ -9,8 +9,9 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
-// Optional intro paragraph for the public page (shared helper).
-$introMsg = handlePageIntroSave('teaching', 'Teaching');
+// Optional featured panel for the public page (shared helper).
+$featuredMsg = handleFeaturedBlockSave('teaching', 'Teaching');
+
 
 $success = '';
 $editItem = null;
@@ -112,8 +113,9 @@ $pagePdfs = getPagePdfs('teaching');
                 <a href="<?= SITE_URL ?>/teachings.php" target="_blank" class="btn btn--outline">Preview ↗</a>
             </div>
 
-        <?php if (!empty($introMsg)): ?><div class="alert alert--success"><?= e($introMsg) ?></div><?php endif; ?>
-        <?= renderPageIntroCard('teaching', 'Teaching') ?>
+        <?php if (!empty($featuredMsg)): ?><div class="alert alert--success"><?= e($featuredMsg) ?></div><?php endif; ?>
+        <?= renderFeaturedBlockCard('teaching', 'Teaching') ?>
+
             <p style="color:var(--color-muted);font-size:0.8125rem;margin-bottom:1rem;">
                 Appears at the top of the public Teaching page, above the list.
                 Leave blank to hide it. Separate paragraphs with a blank line.

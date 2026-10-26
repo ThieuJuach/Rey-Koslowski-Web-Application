@@ -45,20 +45,8 @@ function fetchUploads(string $filter): array {
     return $stmt->fetchAll();
 }
 
-/**
- * Delete a file from disk, but only if it genuinely resolves inside uploads/.
- * The trailing separator stops a sibling directory like "uploads-old" from matching.
- */
-function deleteUploadedFile(string $relativePath): void {
-    if (strpos($relativePath, '..') !== false || !str_starts_with($relativePath, 'uploads/')) {
-        return;
-    }
-    $real       = realpath(__DIR__ . '/../' . $relativePath);
-    $uploadsDir = realpath(__DIR__ . '/../uploads');
-    if ($real && $uploadsDir && str_starts_with($real, $uploadsDir . DIRECTORY_SEPARATOR)) {
-        @unlink($real);
-    }
-}
+// deleteUploadedFile() now lives in includes/functions.php: the featured-block
+// editor needs it too, and two definitions would be a redeclare fatal.
 
 // Set when a video/PDF upload succeeds, so the path can be shown for copying.
 $uploadedPath = '';

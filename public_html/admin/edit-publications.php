@@ -9,8 +9,9 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
-// Optional intro paragraph for the public page (shared helper).
-$introMsg = handlePageIntroSave('publications', 'Publications');
+// Optional featured panel for the public page (shared helper).
+$featuredMsg = handleFeaturedBlockSave('publications', 'Publications');
+
 
 $success = '';
 $editItem = null;
@@ -117,8 +118,9 @@ $pagePdfs = getPagePdfs('publications');
                 <a href="<?= SITE_URL ?>/publications.php" target="_blank" class="btn btn--outline">Preview ↗</a>
             </div>
 
-        <?php if (!empty($introMsg)): ?><div class="alert alert--success"><?= e($introMsg) ?></div><?php endif; ?>
-        <?= renderPageIntroCard('publications', 'Publications') ?>
+        <?php if (!empty($featuredMsg)): ?><div class="alert alert--success"><?= e($featuredMsg) ?></div><?php endif; ?>
+        <?= renderFeaturedBlockCard('publications', 'Publications') ?>
+
 
             <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
 

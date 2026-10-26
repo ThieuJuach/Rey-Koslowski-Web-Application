@@ -3,12 +3,13 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
-// Optional intro paragraph for the public page (shared helper).
-$introMsg = handlePageIntroSave('contact', 'Contact');
+// Optional featured panel for the public page (shared helper).
+$featuredMsg = handleFeaturedBlockSave('contact', 'Contact');
+
 
 $success = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['save_intro'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['save_featured'])) {
     requireCsrf();
     $settings = [
         'contact_email' => sanitizeInput($_POST['email'] ?? '', 100),
@@ -52,8 +53,9 @@ $uni = getSetting('university_url');
             <a href="<?= SITE_URL ?>/contact.php" target="_blank" class="btn btn--outline">Preview ↗</a>
         </div>
 
-        <?php if (!empty($introMsg)): ?><div class="alert alert--success"><?= e($introMsg) ?></div><?php endif; ?>
-        <?= renderPageIntroCard('contact', 'Contact') ?>
+        <?php if (!empty($featuredMsg)): ?><div class="alert alert--success"><?= e($featuredMsg) ?></div><?php endif; ?>
+        <?= renderFeaturedBlockCard('contact', 'Contact') ?>
+
         <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
         <div class="admin-card">
             <div class="admin-card__header"><h2 class="admin-card__title">Contact Details</h2></div>
