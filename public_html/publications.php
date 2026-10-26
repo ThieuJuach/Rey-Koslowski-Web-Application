@@ -69,6 +69,8 @@ include 'includes/nav.php';
 <section class="section">
     <div class="container">
         <div class="content-max">
+            <?= renderPageIntro('publications') ?>
+
             <?php if (!empty($allPubs)): ?>
 
             <?php if (!empty($books)): ?>

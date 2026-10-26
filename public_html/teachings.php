@@ -44,6 +44,9 @@ $featuredImage = getPageFeaturedImage('teaching');
 <section class="section">
     <div class="container">
         <div class="content-max">
+
+            <?= renderPageIntro('teaching') ?>
+
             <div class="section__divider"></div>
             <h2 class="section__title">Courses</h2>
 

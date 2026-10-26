@@ -3,9 +3,12 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
+// Optional intro paragraph for the public page (shared helper).
+$introMsg = handlePageIntroSave('contact', 'Contact');
+
 $success = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['save_intro'])) {
     requireCsrf();
     $settings = [
         'contact_email' => sanitizeInput($_POST['email'] ?? '', 100),
@@ -48,6 +51,9 @@ $uni = getSetting('university_url');
             <h1 class="admin-header__title">Edit Contact Info</h1>
             <a href="<?= SITE_URL ?>/contact.php" target="_blank" class="btn btn--outline">Preview ↗</a>
         </div>
+
+        <?php if (!empty($introMsg)): ?><div class="alert alert--success"><?= e($introMsg) ?></div><?php endif; ?>
+        <?= renderPageIntroCard('contact', 'Contact') ?>
         <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
         <div class="admin-card">
             <div class="admin-card__header"><h2 class="admin-card__title">Contact Details</h2></div>

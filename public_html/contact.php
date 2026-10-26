@@ -47,6 +47,8 @@ $aff3Url = getSetting('footer_affiliation_3_url');
 <section class="section section--dark">
     <div class="container">
         <div class="content-max">
+            <?= renderPageIntro('contact') ?>
+
             <div class="contact-grid">
                 <div>
                     <p class="text-lg" style="color: rgba(255,255,255,0.8); margin-bottom: 2rem; line-height: 1.8;">

@@ -9,6 +9,9 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
+// Optional intro paragraph for the public page (shared helper).
+$introMsg = handlePageIntroSave('media-appearances', 'Media Appearances');
+
 $success = '';
 $editItem = null;
 $mediaTypes = ['print', 'broadcast', 'podcast', 'op_ed', 'online', 'other'];
@@ -102,6 +105,9 @@ $pagePdfs = getPagePdfs('media-appearances');
             <h1 class="admin-header__title"><?= $editItem ? 'Edit Media Appearance' : 'Edit Media Appearances' ?></h1>
             <a href="<?= SITE_URL ?>/media-appearances.php" target="_blank" class="btn btn--outline">Preview ↗</a>
         </div>
+
+        <?php if (!empty($introMsg)): ?><div class="alert alert--success"><?= e($introMsg) ?></div><?php endif; ?>
+        <?= renderPageIntroCard('media-appearances', 'Media Appearances') ?>
         <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
 
         <div class="admin-card">

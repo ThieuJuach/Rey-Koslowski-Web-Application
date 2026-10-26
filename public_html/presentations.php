@@ -72,6 +72,8 @@ include 'includes/nav.php';
 <section class="section">
     <div class="container">
         <div class="content-max">
+            <?= renderPageIntro('presentations') ?>
+
             <?php if (!empty($upcoming)): ?>
             <div class="section__divider"></div>
             <h2 class="section__title">Upcoming</h2>

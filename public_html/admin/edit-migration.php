@@ -3,6 +3,9 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
+// Optional intro paragraph for the public page (shared helper).
+$introMsg = handlePageIntroSave('migration-studies', 'Migration Studies');
+
 $success = '';
 $editFaculty = null;
 $editCourse = null;
@@ -74,6 +77,9 @@ $ugCourses = getMigrationCourses('undergraduate');
             <h1 class="admin-header__title">Edit Migration Studies</h1>
             <a href="<?= SITE_URL ?>/migration-studies.php" target="_blank" class="btn btn--outline">Preview ↗</a>
         </div>
+
+        <?php if (!empty($introMsg)): ?><div class="alert alert--success"><?= e($introMsg) ?></div><?php endif; ?>
+        <?= renderPageIntroCard('migration-studies', 'Migration Studies') ?>
         <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
 
         <!-- Faculty Form -->

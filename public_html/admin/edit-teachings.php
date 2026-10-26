@@ -9,6 +9,9 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
+// Optional intro paragraph for the public page (shared helper).
+$introMsg = handlePageIntroSave('teaching', 'Teaching');
+
 $success = '';
 $editItem = null;
 
@@ -51,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 $success = 'Course updated!';
             }
         }
-    } elseif ($_POST['action'] === 'delete' && isset($_POST['id'])) {
+} elseif ($_POST['action'] === 'delete' && isset($_POST['id'])) {
         $id = sanitizeInt($_POST['id'], 1);
         if ($id) {
             $pdo->prepare("DELETE FROM courses WHERE id = ?")->execute([$id]);
@@ -108,6 +111,22 @@ $pagePdfs = getPagePdfs('teaching');
                 <h1 class="admin-header__title"><?= $editItem ? 'Edit Course' : 'Edit Teaching' ?></h1>
                 <a href="<?= SITE_URL ?>/teachings.php" target="_blank" class="btn btn--outline">Preview ↗</a>
             </div>
+
+        <?php if (!empty($introMsg)): ?><div class="alert alert--success"><?= e($introMsg) ?></div><?php endif; ?>
+        <?= renderPageIntroCard('teaching', 'Teaching') ?>
+            <p style="color:var(--color-muted);font-size:0.8125rem;margin-bottom:1rem;">
+                Appears at the top of the public Teaching page, above the list.
+                Leave blank to hide it. Separate paragraphs with a blank line.
+            </p>
+            <form method="POST">
+                <?= csrfField() ?>
+                <input type="hidden" name="action" value="save_intro">
+                <div class="form-group">
+                    <textarea class="form-textarea" name="page_content" rows="14"><?= e($pageIntro['content'] ?? '') ?></textarea>
+                </div>
+                <button type="submit" class="btn btn--primary">Save Introduction</button>
+            </form>
+        </div>
 
             <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
 

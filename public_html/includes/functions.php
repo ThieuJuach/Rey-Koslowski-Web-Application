@@ -705,6 +705,96 @@ function getProfileImage(): ?array {
    (blog_posts, galleries, gallery_images, service_items) are untouched, so the
    helpers can be restored from version history if those features are ever built. */
 
+// ── Page Introductions ──────────────────────────────────────────────────────
+//
+// Every public page can carry an optional intro paragraph, stored as a row in
+// `pages` and edited from that page's admin screen. The pair below exists so the
+// behaviour is defined once: seven templates and seven admin screens would
+// otherwise each repeat the same markup, validation and upsert.
+
+/**
+ * Render a page's introduction, or '' when none is set.
+ *
+ * Returning an empty string for a missing or blank row is what lets the block be
+ * deployed before any content exists: the page looks exactly as it did before.
+ */
+function renderPageIntro(string $slug): string {
+    $page = getPageContent($slug);
+    if (!$page || trim((string) ($page['content'] ?? '')) === '') return '';
+    return '<div class="prose" style="margin-bottom: 3rem;">'
+         . formatText($page['content'])
+         . '</div>';
+}
+
+/**
+ * Handle a submitted introduction. Call early, before any output is sent.
+ *
+ * Returns a message for the page to display, or '' when this request was not an
+ * intro save — so a caller can write `$success = handlePageIntroSave(...) ?: $success;`
+ * without disturbing its own handlers.
+ *
+ * Guards its own CSRF and rate limit rather than relying on the caller's, because
+ * the admin screens differ in how they gate POSTs: some require $_POST['action'],
+ * others accept any POST.
+ */
+function handlePageIntroSave(string $slug, string $label): string {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['save_intro'])) {
+        return '';
+    }
+    requireCsrf();
+    enforceRateLimit('admin_intro', 30, 60, 'html');
+
+    /*
+     * Only page_content is passed in, rather than all of $_POST.
+     *
+     * validateSchema() rejects fields it was not told about, and treats just
+     * csrf_token and action as structural. This form's submit button is named
+     * save_intro, which would therefore be reported as an unexpected field.
+     * Handing over an explicit single-key array is clearer than widening that
+     * shared allowlist for one form, and keeps the strict-rejection behaviour
+     * intact everywhere else.
+     *
+     * 'html' => true keeps the safe-tag allowlist, so links and emphasis survive
+     * while anything scriptable is stripped by formatText() at render time.
+     */
+    $v = validateSchema(
+        ['page_content' => (string) ($_POST['page_content'] ?? '')],
+        ['page_content' => ['type' => 'string', 'max' => MAX_TEXTAREA_LENGTH, 'html' => true]]
+    );
+    if (!$v['ok']) {
+        return 'Could not save the introduction: ' . implode('; ', $v['errors']);
+    }
+
+    global $pdo;
+    $stmt = $pdo->prepare(
+        "INSERT INTO pages (slug, title, content) VALUES (?, ?, ?)
+         ON DUPLICATE KEY UPDATE content = VALUES(content), updated_at = NOW()"
+    );
+    $stmt->execute([$slug, $label, $v['data']['page_content']]);
+    return 'Introduction saved.';
+}
+
+/**
+ * The admin editor card for a page introduction.
+ */
+function renderPageIntroCard(string $slug, string $label): string {
+    $page    = getPageContent($slug);
+    $current = e((string) ($page['content'] ?? ''));
+
+    return '<div class="admin-card">'
+         . '<div class="admin-card__header"><h2 class="admin-card__title">Page Introduction</h2></div>'
+         . '<p style="color:var(--color-muted);font-size:0.8125rem;margin-bottom:1rem;">'
+         . 'Appears at the top of the public ' . e($label) . ' page, above everything else. '
+         . 'Leave blank to hide it entirely. Separate paragraphs with a blank line.</p>'
+         . '<form method="POST">'
+         . csrfField()
+         . '<div class="form-group">'
+         . '<textarea class="form-textarea" name="page_content" rows="14">' . $current . '</textarea>'
+         . '</div>'
+         . '<button type="submit" name="save_intro" value="1" class="btn btn--primary">Save Introduction</button>'
+         . '</form></div>';
+}
+
 // ── File Upload Handling (OWASP Unrestricted File Upload Prevention) ──
 
 /**

@@ -43,6 +43,9 @@ $featuredImage = getPageFeaturedImage('research');
 <section class="section">
     <div class="container">
         <div class="content-max">
+
+            <?= renderPageIntro('research') ?>
+
             <div class="section__divider"></div>
             <h2 class="section__title">Ongoing Projects</h2>
             <?php if (!empty($ongoingProjects)): ?>

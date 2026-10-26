@@ -9,6 +9,9 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
+// Optional intro paragraph for the public page (shared helper).
+$introMsg = handlePageIntroSave('publications', 'Publications');
+
 $success = '';
 $editItem = null;
 $pubTypes = ['book', 'edited_volume', 'journal_article', 'book_chapter', 'working_paper', 'report', 'other'];
@@ -113,6 +116,9 @@ $pagePdfs = getPagePdfs('publications');
                 <h1 class="admin-header__title"><?= $editItem ? 'Edit Publication' : 'Edit Publications' ?></h1>
                 <a href="<?= SITE_URL ?>/publications.php" target="_blank" class="btn btn--outline">Preview ↗</a>
             </div>
+
+        <?php if (!empty($introMsg)): ?><div class="alert alert--success"><?= e($introMsg) ?></div><?php endif; ?>
+        <?= renderPageIntroCard('publications', 'Publications') ?>
 
             <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
 

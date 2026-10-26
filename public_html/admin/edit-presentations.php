@@ -8,6 +8,9 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
+// Optional intro paragraph for the public page (shared helper).
+$introMsg = handlePageIntroSave('presentations', 'Presentations');
+
 $success = '';
 $error = '';
 $editItem = null;
@@ -22,7 +25,7 @@ if (isset($_GET['edit'])) {
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['save_intro'])) {
     requireCsrf();
 
     if (isset($_POST['toggle_current'])) {
@@ -130,6 +133,9 @@ $pagePdfs = getPagePdfs('presentations');
                 <h1 class="admin-header__title">Presentations</h1>
                 <a href="<?= SITE_URL ?>/presentations.php" target="_blank" class="btn btn--outline">Preview ↗</a>
             </div>
+
+        <?php if (!empty($introMsg)): ?><div class="alert alert--success"><?= e($introMsg) ?></div><?php endif; ?>
+        <?= renderPageIntroCard('presentations', 'Presentations') ?>
 
             <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
             <?php if ($error): ?><div class="alert alert--error"><?= e($error) ?></div><?php endif; ?>
