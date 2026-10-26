@@ -7,7 +7,6 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
-$page = getPageContent('community-engagement');
 $success = '';
 $error = '';
 $editItem = null;
@@ -25,13 +24,7 @@ if (isset($_GET['edit'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
 
-    if (isset($_POST['save_page_content'])) {
-        $content = sanitizeInput($_POST['page_content'] ?? '', MAX_TEXTAREA_LENGTH);
-        $stmt = $pdo->prepare("INSERT INTO pages (slug, title, content) VALUES ('community-engagement', 'Community Engagement', ?) ON DUPLICATE KEY UPDATE content = ?, updated_at = NOW()");
-        $stmt->execute([$content, $content]);
-        $success = 'Page intro updated!';
-        $page = getPageContent('community-engagement');
-    } elseif (isset($_POST['delete_id'])) {
+    if (isset($_POST['delete_id'])) {
         $deleteId = sanitizeInt($_POST['delete_id'], 1);
         if ($deleteId) {
             $pdo->prepare("DELETE FROM community_engagement_items WHERE id = ?")->execute([$deleteId]);
@@ -116,24 +109,6 @@ $items = $pdo->query("SELECT * FROM community_engagement_items ORDER BY display_
             <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
             <?php if ($error): ?><div class="alert alert--error"><?= e($error) ?></div><?php endif; ?>
 
-            <!-- Page Intro -->
-            <div class="admin-card">
-                <div class="admin-card__header"><h2 class="admin-card__title">Page Introduction (optional)</h2></div>
-                <form method="POST" enctype="multipart/form-data">
-                    <?= csrfField() ?>
-                    <div class="form-group">
-                        <textarea class="form-textarea" name="page_content" rows="6"><?= e($page['content'] ?? '') ?></textarea>
-                    </div>
-                    <button type="submit" name="save_page_content" class="btn btn--outline">Save Intro</button>
-                </form>
-            </div>
-
-            <!-- Add / Edit Item -->
-            <div class="admin-card">
-                <div class="admin-card__header">
-                    <h2 class="admin-card__title"><?= $editItem ? 'Edit Item' : 'Add Engagement Item' ?></h2>
-                    <?php if ($editItem): ?><a href="edit-community-engagement.php" class="btn btn--outline">Cancel Edit</a><?php endif; ?>
-                </div>
                 <form method="POST" enctype="multipart/form-data">
                     <?= csrfField() ?>
                     <?php if ($editItem): ?><input type="hidden" name="edit_id" value="<?= $editItem['id'] ?>"><?php endif; ?>

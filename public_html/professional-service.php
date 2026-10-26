@@ -6,7 +6,6 @@ require_once 'includes/auth.php';
 include 'includes/header.php';
 include 'includes/nav.php';
 
-$page = getPageContent('professional-service');
 $items = getProfessionalServiceItems();
 $featuredImage = getPageFeaturedImage('professional-service');
 ?>
@@ -38,12 +37,6 @@ $featuredImage = getPageFeaturedImage('professional-service');
 <section class="section">
     <div class="container">
         <div class="content-max">
-            <?php if ($page && $page['content']): ?>
-            <div class="prose" style="margin-bottom: 3rem;">
-                <?= formatText($page['content']) ?>
-            </div>
-            <?php endif; ?>
-
             <?php if (!empty($items)): ?>
             <div class="blog-posts-list">
                 <?php foreach ($items as $item): ?>

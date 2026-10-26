@@ -7,7 +7,6 @@ require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/auth.php';
 requireLogin();
 
-$page = getPageContent('professional-service');
 $success = '';
 $error = '';
 $editItem = null;
@@ -25,14 +24,7 @@ if (isset($_GET['edit'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     requireCsrf();
 
-    if (isset($_POST['save_page_content'])) {
-        // Save page intro content
-        $content = sanitizeInput($_POST['page_content'] ?? '', MAX_TEXTAREA_LENGTH);
-        $stmt = $pdo->prepare("INSERT INTO pages (slug, title, content) VALUES ('professional-service', 'Professional Service', ?) ON DUPLICATE KEY UPDATE content = ?, updated_at = NOW()");
-        $stmt->execute([$content, $content]);
-        $success = 'Page intro updated!';
-        $page = getPageContent('professional-service');
-    } elseif (isset($_POST['delete_id'])) {
+    if (isset($_POST['delete_id'])) {
         $deleteId = sanitizeInt($_POST['delete_id'], 1);
         if ($deleteId) {
             $pdo->prepare("DELETE FROM professional_service_items WHERE id = ?")->execute([$deleteId]);
@@ -115,25 +107,6 @@ $items = $pdo->query("SELECT * FROM professional_service_items ORDER BY display_
             <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
             <?php if ($error): ?><div class="alert alert--error"><?= e($error) ?></div><?php endif; ?>
 
-            <!-- Page Intro -->
-            <div class="admin-card">
-                <div class="admin-card__header"><h2 class="admin-card__title">Page Introduction (optional)</h2></div>
-                <form method="POST" enctype="multipart/form-data">
-                    <?= csrfField() ?>
-                    <div class="form-group">
-                        <textarea class="form-textarea" name="page_content" rows="6"><?= e($page['content'] ?? '') ?></textarea>
-                        <small style="color:var(--color-muted);">Optional intro paragraph. HTML links allowed.</small>
-                    </div>
-                    <button type="submit" name="save_page_content" class="btn btn--outline">Save Intro</button>
-                </form>
-            </div>
-
-            <!-- Add / Edit Item -->
-            <div class="admin-card">
-                <div class="admin-card__header">
-                    <h2 class="admin-card__title"><?= $editItem ? 'Edit Item' : 'Add Service Item' ?></h2>
-                    <?php if ($editItem): ?><a href="edit-professional-service.php" class="btn btn--outline">Cancel Edit</a><?php endif; ?>
-                </div>
                 <form method="POST" enctype="multipart/form-data">
                     <?= csrfField() ?>
                     <?php if ($editItem): ?><input type="hidden" name="edit_id" value="<?= $editItem['id'] ?>"><?php endif; ?>
