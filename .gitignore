@@ -37,6 +37,12 @@ public_html/uploads/*
 !public_html/uploads/.htaccess
 !public_html/uploads/images/
 public_html/uploads/images/*
+# The video poster cache must exist in the deployed tree. A later !.gitkeep
+# cannot bring it back on its own: git does not descend into an excluded
+# directory, so the directory itself has to be re-included first.
+!public_html/uploads/images/video-thumbs/
+public_html/uploads/images/video-thumbs/*
+!public_html/uploads/images/video-thumbs/.gitkeep
 !public_html/uploads/pdfs/
 public_html/uploads/pdfs/*
 !public_html/uploads/videos/
