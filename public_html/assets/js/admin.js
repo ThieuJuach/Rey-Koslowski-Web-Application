@@ -284,3 +284,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Confirmation prompts, previously inline onsubmit="return confirm(...)".
+
+   Two declarative hooks replace them:
+     data-confirm="text"   on a form  - ask before submitting
+     data-set-field/value  on a button - confirm, add a hidden field, submit
+
+   Keeping them out of the markup is what lets the CSP refuse inline script
+   outright, so an injected <script> cannot run even if one were ever stored.
+   ────────────────────────────────────────────────────────────────────────── */
+document.addEventListener('submit', function (ev) {
+    const form = ev.target.closest('form[data-confirm]');
+    if (form && !window.confirm(form.getAttribute('data-confirm'))) {
+        ev.preventDefault();
+    }
+}, true);
+
+document.addEventListener('click', function (ev) {
+    const btn = ev.target.closest('[data-set-field]');
+    if (!btn) return;
+
+    const message = btn.getAttribute('data-confirm');
+    if (message && !window.confirm(message)) return;
+
+    const form = btn.closest('form');
+    if (!form) return;
+
+    const field = document.createElement('input');
+    field.type  = 'hidden';
+    field.name  = btn.getAttribute('data-set-field');
+    field.value = btn.getAttribute('data-set-value') || '1';
+    form.appendChild(field);
+    form.submit();
+});

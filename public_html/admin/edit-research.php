@@ -230,7 +230,7 @@ $pagePdfs = getPagePdfs('research');
                     <span>📄</span>
                     <div style="flex:1;font-size:0.875rem;"><?= e($pdf['title']) ?></div>
                     <a href="<?= SITE_URL . '/' . e($pdf['pdf_path']) ?>" target="_blank" class="btn btn--outline" style="padding:0.25rem 0.5rem;font-size:0.75rem;">View</a>
-                    <form method="POST" style="display:inline" onsubmit="return confirm('Remove this PDF?')">
+                    <form method="POST" style="display:inline" data-confirm="Remove this PDF?" >
                         <?= csrfField() ?>
                         <input type="hidden" name="delete_page_pdf" value="<?= $pdf['id'] ?>">
                         <button type="submit" class="btn btn--danger" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Remove</button>
@@ -256,11 +256,11 @@ $pagePdfs = getPagePdfs('research');
                             <?php if ($project['image_path']): ?><span title="Has cover image">🖼️</span><?php endif; ?>
                             <?php if ($project['video_path']): ?><span title="Has video">🎬</span><?php endif; ?>
                             <?php if ($project['link_url']): ?>
-                            <a href="<?= e($project['link_url']) ?>" target="_blank" style="font-size:0.75rem;color:var(--admin-accent);">🔗</a>
+                            <a href="<?= safeUrl($project['link_url']) ?>" target="_blank" style="font-size:0.75rem;color:var(--admin-accent);">🔗</a>
                             <?php endif; ?>
                         </div>
                         <a href="?edit=<?= $project['id'] ?>" class="btn btn--outline" style="padding:0.25rem 0.75rem;font-size:0.75rem;">Edit</a>
-                        <form method="POST" style="display:inline" onsubmit="return confirm('Delete this project?')">
+                        <form method="POST" style="display:inline" data-confirm="Delete this project?" >
                             <?= csrfField() ?>
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<?= $project['id'] ?>">
@@ -272,7 +272,6 @@ $pagePdfs = getPagePdfs('research');
             </div>
         </div>
     </div>
-    <script>const SITE_URL = '<?= SITE_URL ?>';</script>
     <script src="<?= asset('assets/js/admin.js') ?>"></script>
 </body>
 </html>

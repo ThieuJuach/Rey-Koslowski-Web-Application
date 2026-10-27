@@ -1,6 +1,6 @@
 <?php
 $pageTitle = 'Professional Service';
-$metaDescription = 'Professional service activities by Rey Koslowski, including editorial roles, advisory positions, and contributions to academic organizations in international relations.';
+$metaDescription = 'Professional service by Rey Koslowski: editorial roles, advisory positions, and contributions to academic organizations in international relations.';
 require_once 'config.php';
 require_once 'includes/auth.php';
 include 'includes/header.php';
@@ -58,7 +58,7 @@ $featuredImage = getPageFeaturedImage('professional-service');
                     <?php endif; ?>
                     <h3 class="blog-post-card__title">
                         <?php if ($item['link_url']): ?>
-                        <a href="<?= e($item['link_url']) ?>" target="_blank" rel="noopener"><?= e($item['title']) ?></a>
+                        <a href="<?= safeUrl($item['link_url']) ?>" target="_blank" rel="noopener"><?= e($item['title']) ?></a>
                         <?php else: ?>
                         <?= e($item['title']) ?>
                         <?php endif; ?>
@@ -71,7 +71,7 @@ $featuredImage = getPageFeaturedImage('professional-service');
                     <p class="blog-post-card__excerpt"><?= e($item['excerpt']) ?></p>
                     <?php endif; ?>
                     <?php if ($item['link_url']): ?>
-                    <a href="<?= e($item['link_url']) ?>" target="_blank" rel="noopener" class="blog-post-card__link">Learn more →</a>
+                    <a href="<?= safeUrl($item['link_url']) ?>" target="_blank" rel="noopener" class="blog-post-card__link">Learn more →</a>
                     <?php endif; ?>
                 </article>
                 <?php endforeach; ?>

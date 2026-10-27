@@ -51,8 +51,8 @@ $featuredImage = getPageFeaturedImage('migration-studies');
             <div class="faculty-grid">
                 <?php if (!empty($faculty)): ?>
                     <?php foreach ($faculty as $f): ?>
-                    <a href="<?= e($f['profile_url'] ?? $f['link_url'] ?? '#') ?>" target="_blank" rel="noopener" class="faculty-card">
-                        <h4 class="faculty-card__name"><?= e($f['name']) ?></h4>
+                    <a href="<?= safeUrl($f['profile_url'] ?? $f['link_url'] ?? '#') ?>" target="_blank" rel="noopener" class="faculty-card">
+                        <h3 class="faculty-card__name"><?= e($f['name']) ?></h3>
                         <p class="faculty-card__dept"><?= e($f['department'] ?? '') ?></p>
                     </a>
                     <?php endforeach; ?>
@@ -75,8 +75,8 @@ $featuredImage = getPageFeaturedImage('migration-studies');
                         ['Zai Liang', 'Sociology', 'https://www.albany.edu/sociology/faculty/zai-liang'],
                     ];
                     foreach ($defaultFaculty as $f): ?>
-                    <a href="<?= e($f[2]) ?>" target="_blank" rel="noopener" class="faculty-card">
-                        <h4 class="faculty-card__name"><?= e($f[0]) ?></h4>
+                    <a href="<?= safeUrl($f[2]) ?>" target="_blank" rel="noopener" class="faculty-card">
+                        <h3 class="faculty-card__name"><?= e($f[0]) ?></h3>
                         <p class="faculty-card__dept"><?= e($f[1]) ?></p>
                     </a>
                     <?php endforeach; ?>
@@ -103,9 +103,9 @@ $featuredImage = getPageFeaturedImage('migration-studies');
                         <?php endif; ?>
                         <div>
                             <?php if ($c['link_url']): ?>
-                            <a href="<?= e($c['link_url']) ?>" target="_blank" rel="noopener"><h4 class="migration-course-card__title"><?= e($c['title']) ?></h4></a>
+                            <a href="<?= safeUrl($c['link_url']) ?>" target="_blank" rel="noopener"><h3 class="migration-course-card__title"><?= e($c['title']) ?></h3></a>
                             <?php else: ?>
-                            <h4 class="migration-course-card__title"><?= e($c['title']) ?></h4>
+                            <h3 class="migration-course-card__title"><?= e($c['title']) ?></h3>
                             <?php endif; ?>
                             <?php if ($c['description']): ?>
                             <p class="migration-course-card__desc"><?= formatText($c['description']) ?></p>
@@ -131,9 +131,9 @@ $featuredImage = getPageFeaturedImage('migration-studies');
                         <?php endif; ?>
                         <div>
                             <?php if ($c['link_url']): ?>
-                            <a href="<?= e($c['link_url']) ?>" target="_blank" rel="noopener"><h4 class="migration-course-card__title"><?= e($c['title']) ?></h4></a>
+                            <a href="<?= safeUrl($c['link_url']) ?>" target="_blank" rel="noopener"><h3 class="migration-course-card__title"><?= e($c['title']) ?></h3></a>
                             <?php else: ?>
-                            <h4 class="migration-course-card__title"><?= e($c['title']) ?></h4>
+                            <h3 class="migration-course-card__title"><?= e($c['title']) ?></h3>
                             <?php endif; ?>
                             <?php if ($c['description']): ?>
                             <p class="migration-course-card__desc"><?= formatText($c['description']) ?></p>

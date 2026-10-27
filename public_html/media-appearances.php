@@ -61,7 +61,7 @@ $featuredImage = getPageFeaturedImage('media-appearances');
                     <div class="media-card__content">
                         <div style="flex:1;">
                             <?php if ($item['url'] || $item['link_url']): ?>
-                            <a href="<?= e($item['link_url'] ?: $item['url']) ?>" target="_blank" rel="noopener" class="media-card__title-link">
+                            <a href="<?= safeUrl($item['link_url'] ?: $item['url']) ?>" target="_blank" rel="noopener" class="media-card__title-link">
                                 <?= e($item['title']) ?>
                             </a>
                             <?php else: ?>

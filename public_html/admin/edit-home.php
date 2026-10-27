@@ -161,8 +161,13 @@ $heroImage = getPageFeaturedImage('home');
                     <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
                         <button type="submit" name="save_hero_image" class="btn btn--primary">Upload Hero Image</button>
                         <?php if ($heroImage): ?>
-                        <button type="submit" name="save_hero_image" value="1" onclick="document.querySelector('[name=remove_hero_image]').value='1';" class="btn btn--danger" style="display:none;"></button>
-                        <button type="button" class="btn btn--outline" onclick="if(confirm('Remove hero image?')){var f=this.closest('form');var i=document.createElement('input');i.type='hidden';i.name='remove_hero_image';i.value='1';f.appendChild(i);f.submit();}">Remove Image</button>
+                        <?php // The removal flag is submitted by admin.js, which adds the hidden
+                              // field after confirming. The empty display:none button that used
+                              // to sit here did nothing and has been dropped. ?>
+                        <button type="button" class="btn btn--outline"
+                                data-confirm="Remove hero image?"
+                                data-set-field="remove_hero_image"
+                                data-set-value="1">Remove Image</button>
                         <?php endif; ?>
                     </div>
                 </form>
@@ -266,5 +271,6 @@ $heroImage = getPageFeaturedImage('home');
             </div>
         </div>
     </div>
+<script src="<?= asset('assets/js/admin.js') ?>"></script>
 </body>
 </html>

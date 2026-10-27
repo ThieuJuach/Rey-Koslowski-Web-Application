@@ -59,7 +59,7 @@ $featuredImage = getPageFeaturedImage('community-engagement');
                     <?php endif; ?>
                     <h3 class="blog-post-card__title">
                         <?php if ($item['link_url']): ?>
-                        <a href="<?= e($item['link_url']) ?>" target="_blank" rel="noopener"><?= e($item['title']) ?></a>
+                        <a href="<?= safeUrl($item['link_url']) ?>" target="_blank" rel="noopener"><?= e($item['title']) ?></a>
                         <?php else: ?>
                         <?= e($item['title']) ?>
                         <?php endif; ?>
@@ -72,7 +72,7 @@ $featuredImage = getPageFeaturedImage('community-engagement');
                     <p class="blog-post-card__excerpt"><?= e($item['excerpt']) ?></p>
                     <?php endif; ?>
                     <?php if ($item['link_url']): ?>
-                    <a href="<?= e($item['link_url']) ?>" target="_blank" rel="noopener" class="blog-post-card__link">Learn more →</a>
+                    <a href="<?= safeUrl($item['link_url']) ?>" target="_blank" rel="noopener" class="blog-post-card__link">Learn more →</a>
                     <?php endif; ?>
                 </article>
                 <?php endforeach; ?>

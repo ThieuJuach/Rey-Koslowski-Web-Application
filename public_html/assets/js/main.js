@@ -436,3 +436,46 @@ document.addEventListener('DOMContentLoaded', () => {
 if ('scrollRestoration' in history) {
     history.scrollRestoration = 'auto';
 }
+/* ──────────────────────────────────────────────────────────────────────────
+   Behaviour that used to live in inline onclick attributes.
+
+   Moving it here is what allows the CSP to drop script-src 'unsafe-inline'.
+   With that allowance gone, markup injected into the page cannot execute even
+   if an escaping bug ever slips through - the browser refuses to run it.
+
+   Everything is delegated from document, so it works for elements rendered
+   conditionally by PHP without needing a per-page hook.
+   ────────────────────────────────────────────────────────────────────────── */
+document.addEventListener('click', function (ev) {
+    const cvOpen = ev.target.closest('[data-cv-open]');
+    if (cvOpen) {
+        const viewer = document.getElementById('cv-viewer');
+        if (viewer) {
+            ev.preventDefault();
+            viewer.style.display = 'block';
+            viewer.scrollIntoView({ behavior: 'smooth' });
+        }
+        return;
+    }
+
+    if (ev.target.closest('[data-cv-close]')) {
+        const viewer = document.getElementById('cv-viewer');
+        if (viewer) viewer.style.display = 'none';
+        return;
+    }
+
+    if (ev.target.closest('[data-welcome-close]')) {
+        const body = document.getElementById('welcomeBody');
+        const toggle = document.getElementById('welcomeToggle');
+        if (body) body.style.display = 'none';
+        if (toggle) toggle.style.display = 'flex';
+        return;
+    }
+
+    if (ev.target.closest('[data-welcome-open]')) {
+        const body = document.getElementById('welcomeBody');
+        const toggle = document.getElementById('welcomeToggle');
+        if (body) body.style.display = 'block';
+        if (toggle) toggle.style.display = 'none';
+    }
+});

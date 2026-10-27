@@ -60,7 +60,7 @@ $featuredImage = getPageFeaturedImage('teaching');
                             <?php foreach ($ugCourses as $course): ?>
                             <li>
                                 <?php if ($course['link_url']): ?>
-                                <a href="<?= e($course['link_url']) ?>" target="_blank" rel="noopener"><?= e(($course['code'] ? $course['code'] . ' — ' : '') . $course['title']) ?></a>
+                                <a href="<?= safeUrl($course['link_url']) ?>" target="_blank" rel="noopener"><?= e(($course['code'] ? $course['code'] . ' — ' : '') . $course['title']) ?></a>
                                 <?php else: ?>
                                 <?= e(($course['code'] ? $course['code'] . ' — ' : '') . $course['title']) ?>
                                 <?php endif; ?>
@@ -88,7 +88,7 @@ $featuredImage = getPageFeaturedImage('teaching');
                             <?php foreach ($gradCourses as $course): ?>
                             <li>
                                 <?php if ($course['link_url']): ?>
-                                <a href="<?= e($course['link_url']) ?>" target="_blank" rel="noopener"><?= e(($course['code'] ? $course['code'] . ' — ' : '') . $course['title']) ?></a>
+                                <a href="<?= safeUrl($course['link_url']) ?>" target="_blank" rel="noopener"><?= e(($course['code'] ? $course['code'] . ' — ' : '') . $course['title']) ?></a>
                                 <?php else: ?>
                                 <?= e(($course['code'] ? $course['code'] . ' — ' : '') . $course['title']) ?>
                                 <?php endif; ?>

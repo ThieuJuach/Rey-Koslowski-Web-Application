@@ -87,9 +87,9 @@ include 'includes/nav.php';
                     <?php endif; ?>
                     <div class="pub-card__content">
                         <?php if ($pres['link_url']): ?>
-                        <a href="<?= e($pres['link_url']) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h4 class="pub-card__title"><?= e($pres['title']) ?></h4></a>
+                        <a href="<?= safeUrl($pres['link_url']) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h3 class="pub-card__title"><?= e($pres['title']) ?></h3></a>
                         <?php else: ?>
-                        <h4 class="pub-card__title"><?= e($pres['title']) ?></h4>
+                        <h3 class="pub-card__title"><?= e($pres['title']) ?></h3>
                         <?php endif; ?>
                         <p class="pub-card__meta"><?= $pres['event_name'] ? e($pres['event_name']) : '' ?><?= $pres['location'] ? ' · ' . e($pres['location']) : '' ?></p>
                         <?php if ($pres['presentation_date']): ?>
@@ -124,9 +124,9 @@ include 'includes/nav.php';
                     <?php endif; ?>
                     <div class="pub-card__content">
                         <?php if ($pres['link_url']): ?>
-                        <a href="<?= e($pres['link_url']) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h4 class="pub-card__title"><?= e($pres['title']) ?></h4></a>
+                        <a href="<?= safeUrl($pres['link_url']) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h3 class="pub-card__title"><?= e($pres['title']) ?></h3></a>
                         <?php else: ?>
-                        <h4 class="pub-card__title"><?= e($pres['title']) ?></h4>
+                        <h3 class="pub-card__title"><?= e($pres['title']) ?></h3>
                         <?php endif; ?>
                         <p class="pub-card__meta"><?= $pres['event_name'] ? e($pres['event_name']) : '' ?><?= $pres['location'] ? ' · ' . e($pres['location']) : '' ?></p>
                         <?php if ($pres['presentation_date']): ?>

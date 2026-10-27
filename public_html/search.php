@@ -38,8 +38,25 @@ if ($term !== '') {
         $term = mb_substr($term, 0, $MAX_TERM);
     }
 
-    // Cheap to run, but not free: cap how often one IP can do it.
-    $tooMany = isRateLimited('search_' . getClientIp(), 30, 60);
+    /*
+     * Cheap to run, but not free: cap how often one IP can do it.
+     *
+     * The page still renders its own friendly note rather than the generic
+     * interstitial - a searcher who typed one query too fast should keep their
+     * search box. The status line has to tell the truth all the same: 200 here
+     * would let a crawler index "too many searches" as the page's content, and
+     * gives automated clients nothing to back off on. 429 plus Retry-After is
+     * what both of them understand.
+     */
+    $limit   = rateLimitCheck('search_' . getClientIp(), 30, 60);
+    $tooMany = !$limit['allowed'];
+
+    if ($tooMany && !headers_sent()) {
+        http_response_code(429);
+        header('Retry-After: ' . max(1, (int) $limit['retry_after']));
+        header('Cache-Control: no-store');
+        $robotsOverride = 'noindex, follow';
+    }
 
     if (!$tooMany && mb_strlen($term) >= $MIN_TERM) {
         /*
@@ -241,7 +258,7 @@ include 'includes/nav.php';
                     <?php foreach ($group as $row): ?>
                     <article class="search-result">
                         <h3 class="search-result__title">
-                            <a href="<?= e($row['href']) ?>"<?= str_starts_with($row['href'], SITE_URL) ? '' : ' target="_blank" rel="noopener"' ?>>
+                            <a href="<?= safeUrl($row['href']) ?>"<?= str_starts_with($row['href'], SITE_URL) ? '' : ' target="_blank" rel="noopener"' ?>>
                                 <?= e($row['title']) ?>
                             </a>
                         </h3>

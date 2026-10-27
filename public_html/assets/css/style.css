@@ -838,6 +838,11 @@ a.current-item__title:hover { color: var(--color-accent); }
     position: absolute; top: 0.75rem; right: 0.75rem;
     background: none; border: none; font-size: 1.25rem; color: var(--color-muted);
     cursor: pointer; line-height: 1; padding: 0.25rem;
+    /* A bare glyph is only ~20px across, which is below the 24px minimum
+       touch target. Sizing the button rather than the glyph keeps it looking
+       identical while making it reliably tappable. */
+    min-width: 1.75rem; min-height: 1.75rem;
+    display: inline-flex; align-items: center; justify-content: center;
 }
 .welcome-widget__close:hover { color: var(--color-fg); }
 .welcome-widget__title {
@@ -955,4 +960,19 @@ a.current-item__title:hover { color: var(--color-accent); }
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
     }
+}
+
+/* ── Touch target sizing (WCAG 2.5.8) ────────────────────────────────────────
+   Footer links render ~20px tall, under the 24px minimum, and they sit in a
+   tight column where a mis-tap hits the neighbour. Padding is added only at
+   touch widths so the desktop footer keeps its current density. */
+@media (max-width: 768px) {
+    .footer__list a,
+    .footer__consent-link,
+    .contact-item__value a {
+        display: inline-block;
+        padding-block: 0.3rem;
+        min-height: 24px;
+    }
+    .footer__list li { margin-bottom: 0.125rem; }
 }

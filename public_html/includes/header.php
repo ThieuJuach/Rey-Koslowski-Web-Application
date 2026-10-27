@@ -32,18 +32,29 @@ enforceRateLimit('public_page', PUBLIC_PAGE_MAX_PER_MINUTE, 60, 'html');
 
     $fullDesc = e($metaDescription ?? 'Rey Koslowski - Professor of Political Science, University at Albany (SUNY). Research on international relations, migration, and homeland security.');
 
-    // OG image: page may set $ogImage explicitly; otherwise fall back to profile photo
+    /*
+     * OG image, in order of preference: one the page set itself, then the
+     * profile photo, then the hero image.
+     *
+     * The hero fallback matters - the profile photo is optional content, and
+     * when it is absent every share of every page produces a blank preview
+     * card. The hero file ships with the site, so this always resolves.
+     */
     $_headerProfileImg = getProfileImage();
     if (empty($ogImage) && $_headerProfileImg) {
         $ogImage    = SITE_URL . '/' . $_headerProfileImg['image_path'];
         $ogImageAlt = $ogImageAlt ?? ($_headerProfileImg['alt_text'] ?: 'Rey Koslowski');
+    }
+    if (empty($ogImage)) {
+        $ogImage    = SITE_URL . '/uploads/images/hero/hero-1440.jpg';
+        $ogImageAlt = $ogImageAlt ?? 'Books by Rey Koslowski';
     }
     ?>
 
     <!-- Primary meta -->
     <title><?= $fullTitle ?></title>
     <meta name="description" content="<?= $fullDesc ?>">
-    <link rel="canonical" href="<?= e($canonicalUrl) ?>">
+    <link rel="canonical" href="<?= safeUrl($canonicalUrl) ?>">
 
     <!-- Open Graph -->
     <meta property="og:type"        content="<?= e($ogType ?? 'website') ?>">
@@ -118,10 +129,18 @@ enforceRateLimit('public_page', PUBLIC_PAGE_MAX_PER_MINUTE, 60, 'html');
     if (!empty($sameAs))          $personSchema['sameAs'] = $sameAs;
     if ($_headerProfileImg)       $personSchema['image']  = SITE_URL . '/' . $_headerProfileImg['image_path'];
     ?>
-    <script type="application/ld+json"><?= json_encode($personSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?></script>
+    <?php /*
+       JSON_HEX_TAG is load-bearing, not cosmetic. Without it a title containing
+       </script> closes this element early and everything after it is parsed as
+       HTML - a stored XSS on every page that puts content into the schema. The
+       HEX flags escape < > & ' " to \uXXXX, which is still valid JSON and which
+       Google parses normally. JSON_UNESCAPED_SLASHES was dropped for the same
+       reason: there is no need to emit a bare / inside a script element.
+    */ ?>
+    <script type="application/ld+json"><?= json_encode($personSchema, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
 
     <?php if (!empty($pageSchema)): ?>
-    <script type="application/ld+json"><?= json_encode($pageSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?></script>
+    <script type="application/ld+json"><?= json_encode($pageSchema, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
     <?php endif; ?>
 </head>
 <body>

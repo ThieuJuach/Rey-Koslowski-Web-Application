@@ -44,30 +44,59 @@ ErrorDocument 404 /404.php
 
 # ── Protect Sensitive Files (OWASP: Information Disclosure) ──
 <FilesMatch "\.(sql|log|ini|env|json|lock|bak|old|tmp|md|sh)$">
-    Order Allow,Deny
-    Deny from all
+    # Apache 2.4 states this with Require; 2.2 needs Order/Deny. Giving both,
+    # each guarded by the module that understands it, keeps the rule working on
+    # either version - and stops the site 500ing on a 2.4 host that does not
+    # load mod_access_compat, which is what the bare 2.2 form used to do.
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
 </FilesMatch>
 
 # Allow robots.txt and sitemap.xml to be publicly accessible
 <Files "robots.txt">
-    Order Allow,Deny
-    Allow from all
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Allow from all
+    </IfModule>
 </Files>
 <Files "sitemap.xml">
-    Order Allow,Deny
-    Allow from all
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Allow from all
+    </IfModule>
 </Files>
 
 # Protect config and secrets files from direct access
 <Files "config.php">
-    Order Allow,Deny
-    Deny from all
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
 </Files>
 # secrets.php normally lives ABOVE the web root; this is belt-and-braces in case a
 # copy ever ends up in public_html on a host that cannot write above it.
 <Files "secrets.php">
-    Order Allow,Deny
-    Deny from all
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
 </Files>
 
 # Protect sensitive directories
@@ -105,7 +134,7 @@ ServerSignature Off
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
     
     # Content Security Policy
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; connect-src 'self'; form-action 'self'; base-uri 'self'; object-src 'none';"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; connect-src 'self'; form-action 'self'; base-uri 'self'; object-src 'none';"
     
     # Strict Transport Security (HTTPS only — 1 year)
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"

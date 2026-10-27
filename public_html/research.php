@@ -55,7 +55,7 @@ $featuredImage = getPageFeaturedImage('research');
                 <?php foreach ($ongoingProjects as $project): ?>
                 <div class="card <?= $project['link_url'] ? 'card--link' : '' ?>">
                     <?php if ($project['link_url']): ?>
-                    <a href="<?= e($project['link_url']) ?>" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block;">
+                    <a href="<?= safeUrl($project['link_url']) ?>" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;display:block;">
                     <?php endif; ?>
                     <?php if (!empty($project['image_path'])): ?>
                     <img src="<?= SITE_URL . '/' . e($project['image_path']) ?>" alt="<?= e($project['title']) ?>" class="card__cover">
@@ -88,7 +88,7 @@ $featuredImage = getPageFeaturedImage('research');
                 <?php foreach ($completedProjects as $project): ?>
                 <div class="past-project">
                     <?php if ($project['link_url']): ?>
-                    <a href="<?= e($project['link_url']) ?>" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
+                    <a href="<?= safeUrl($project['link_url']) ?>" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
                     <?php endif; ?>
                     <h4 class="past-project__title"><?= e($project['title']) ?></h4>
                     <?php if ($project['description']): ?>

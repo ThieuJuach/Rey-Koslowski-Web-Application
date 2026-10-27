@@ -7,7 +7,7 @@
  */
 $pageTitle = 'Home';
 $metaDescription = 'Rey Koslowski - Professor of Political Science at University at Albany (SUNY). Research on international relations, migration policy, and homeland security.';
-$fullPageTitle = 'Rey Koslowski | Professor of Political Science, University at Albany (SUNY)';
+$fullPageTitle = 'Rey Koslowski | Professor of Political Science';
 require_once 'config.php';
 require_once 'includes/auth.php';
 include 'includes/header.php';
@@ -28,7 +28,15 @@ $siteTitle = getSetting('site_title', 'Rey Koslowski');
 $siteSubtitle = getSetting('site_subtitle', 'Professor of Political Science');
 $siteAffiliation = getSetting('site_affiliation', 'Rockefeller College of Public Affairs and Policy, University at Albany (SUNY)');
 
-$cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
+/*
+ * Fall back to the external CV link when the uploaded file is not actually on
+ * disk. The setting can outlive the file - a tidy-up of uploads/, a restore,
+ * or a half-finished replacement all leave the path pointing at nothing, and
+ * the page would then offer a "Download CV" button that 404s. Checking the
+ * file is cheap and keeps the button honest.
+ */
+$cvOnDisk = $cvFilePath && is_file(__DIR__ . '/' . ltrim($cvFilePath, '/'));
+$cvSrc    = $cvOnDisk ? SITE_URL . '/' . $cvFilePath : $cvUrl;
 ?>
 
 <main id="main-content">
@@ -61,13 +69,15 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
         <h1 class="home-intro__name"><?= e($siteTitle) ?></h1>
         <p class="home-intro__role"><?= e($siteSubtitle) ?></p>
         <p class="home-intro__affil"><?= e($siteAffiliation) ?></p>
-        <?php if ($cvUrl || $cvFilePath): ?>
+        <?php // Gate on the resolved source, not on the raw settings: either one can
+          // be set and still produce nothing to link to.
+          if ($cvSrc): ?>
         <div class="page-header__cv-actions">
-            <a href="#cv-viewer" class="page-header__cv-btn" onclick="document.getElementById('cv-viewer').style.display='block';window.scrollTo({top:document.getElementById('cv-viewer').offsetTop,behavior:'smooth'});return false;">
+            <a href="#cv-viewer" class="page-header__cv-btn" data-cv-open>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 View CV
             </a>
-            <a href="<?= e($cvSrc) ?>" download class="page-header__cv-btn page-header__cv-btn--download">
+            <a href="<?= safeUrl($cvSrc) ?>" download class="page-header__cv-btn page-header__cv-btn--download">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Download CV
             </a>
@@ -101,16 +111,18 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
 </section>
 
 <!-- CV Viewer -->
-<?php if ($cvUrl || $cvFilePath): ?>
+<?php // Gate on the resolved source, not on the raw settings: either one can
+          // be set and still produce nothing to link to.
+          if ($cvSrc): ?>
 <section id="cv-viewer" class="cv-viewer" style="display:none;">
     <div class="container">
         <div class="content-max">
             <div class="cv-viewer__header">
                 <h2 class="section__title">Curriculum Vitae</h2>
-                <button onclick="document.getElementById('cv-viewer').style.display='none'" class="cv-viewer__close">&times; Close</button>
+                <button type="button" class="cv-viewer__close" data-cv-close>&times; Close</button>
             </div>
             <div class="cv-viewer__frame">
-                <iframe src="<?= e($cvSrc) ?>#toolbar=1" title="Curriculum Vitae" width="100%" height="800" style="border:none;border-radius:var(--radius);"></iframe>
+                <iframe src="<?= safeUrl($cvSrc) ?>#toolbar=1" title="Curriculum Vitae" width="100%" height="800" style="border:none;border-radius:var(--radius);"></iframe>
             </div>
         </div>
     </div>
@@ -184,8 +196,8 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
             </h3>
             <div class="projects-grid" style="margin-bottom: 2rem;">
                 <?php foreach ($currentResearch as $project): ?>
-                <?php $cardTag = $project['link_url'] ? 'a' : 'div'; ?>
-                <<?= $cardTag ?> class="card <?= $project['link_url'] ? 'card--link' : '' ?>"<?= $project['link_url'] ? ' href="' . e($project['link_url']) . '" target="_blank" rel="noopener"' : '' ?>>
+                <?php $cardTag = safeUrl($project['link_url']) ? 'a' : 'div'; ?>
+                <<?= $cardTag ?> class="card <?= safeUrl($project['link_url']) ? 'card--link' : '' ?>"<?= safeUrl($project['link_url']) ? ' href="' . safeUrl($project['link_url']) . '" target="_blank" rel="noopener"' : '' ?>>
                     <?php if (!empty($project['image_path'])): ?>
                     <img src="<?= SITE_URL . '/' . e($project['image_path']) ?>" alt="<?= e($project['title']) ?>" class="card__cover" loading="lazy">
                     <?php endif; ?>
@@ -214,7 +226,7 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
                     <?php endif; ?>
                     <div>
                         <?php if ($course['link_url']): ?>
-                        <a href="<?= e($course['link_url']) ?>" target="_blank" rel="noopener" class="current-item__title"><?= e($course['title']) ?></a>
+                        <a href="<?= safeUrl($course['link_url']) ?>" target="_blank" rel="noopener" class="current-item__title"><?= e($course['title']) ?></a>
                         <?php else: ?>
                         <h4 class="current-item__title"><?= e($course['title']) ?></h4>
                         <?php endif; ?>
@@ -236,11 +248,11 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
                     <div class="pub-card__content">
                         <?php if ($pub['link_url'] || $pub['url'] || $pub['doi']): ?>
                         <?php $pubLink = $pub['link_url'] ?: ($pub['url'] ?: ($pub['doi'] ? 'https://doi.org/' . $pub['doi'] : '')); ?>
-                        <a href="<?= e($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link">
-                            <h4 class="pub-card__title"><?= e($pub['title']) ?></h4>
+                        <a href="<?= safeUrl($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link">
+                            <h3 class="pub-card__title"><?= e($pub['title']) ?></h3>
                         </a>
                         <?php else: ?>
-                        <h4 class="pub-card__title"><?= e($pub['title']) ?></h4>
+                        <h3 class="pub-card__title"><?= e($pub['title']) ?></h3>
                         <?php endif; ?>
                         <p class="pub-card__meta">
                             <?= e($pub['authors'] ?? '') ?>
@@ -263,11 +275,11 @@ $cvSrc = $cvFilePath ? SITE_URL . '/' . $cvFilePath : $cvUrl;
                 <div class="pub-card">
                     <div class="pub-card__content">
                         <?php if ($pres['link_url']): ?>
-                        <a href="<?= e($pres['link_url']) ?>" target="_blank" rel="noopener" class="pub-card__title-link">
-                            <h4 class="pub-card__title"><?= e($pres['title']) ?></h4>
+                        <a href="<?= safeUrl($pres['link_url']) ?>" target="_blank" rel="noopener" class="pub-card__title-link">
+                            <h3 class="pub-card__title"><?= e($pres['title']) ?></h3>
                         </a>
                         <?php else: ?>
-                        <h4 class="pub-card__title"><?= e($pres['title']) ?></h4>
+                        <h3 class="pub-card__title"><?= e($pres['title']) ?></h3>
                         <?php endif; ?>
                         <p class="pub-card__meta">
                             <?= $pres['event_name'] ? e($pres['event_name']) : '' ?>
@@ -344,7 +356,7 @@ $welcomeMsg     = trim(getSetting('welcome_message', ''));
 <?php if ($welcomeEnabled === '1'): ?>
 <div class="welcome-widget" id="welcomeWidget">
     <div class="welcome-widget__body" id="welcomeBody">
-        <button class="welcome-widget__close" onclick="document.getElementById('welcomeBody').style.display='none';document.getElementById('welcomeToggle').style.display='flex';" aria-label="Minimize">&times;</button>
+        <button type="button" class="welcome-widget__close" data-welcome-close aria-label="Minimize">&times;</button>
         <h4 class="welcome-widget__title">Welcome</h4>
         <div class="welcome-widget__text">
             <?php if ($welcomeMsg !== ''): ?>
@@ -354,7 +366,7 @@ $welcomeMsg     = trim(getSetting('welcome_message', ''));
             <?php endif; ?>
         </div>
     </div>
-    <button class="welcome-widget__toggle" id="welcomeToggle" style="display:none;" onclick="document.getElementById('welcomeBody').style.display='block';this.style.display='none';" aria-label="Open welcome message">
+    <button type="button" class="welcome-widget__toggle" id="welcomeToggle" style="display:none;" data-welcome-open aria-label="Open welcome message">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     </button>
 </div>

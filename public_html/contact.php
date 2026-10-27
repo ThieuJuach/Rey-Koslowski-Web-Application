@@ -64,7 +64,7 @@ $aff3Url = getSetting('footer_affiliation_3_url');
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                             </div>
                             <div>
-                                <h3 class="contact-item__label">Office Address</h3>
+                                <h2 class="contact-item__label">Office Address</h2>
                                 <p class="contact-item__value"><?= nl2br(e($officeAddress)) ?></p>
                             </div>
                         </div>
@@ -73,7 +73,7 @@ $aff3Url = getSetting('footer_affiliation_3_url');
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                             </div>
                             <div>
-                                <h3 class="contact-item__label">Phone</h3>
+                                <h2 class="contact-item__label">Phone</h2>
                                 <p class="contact-item__value"><?= e($contactPhone) ?></p>
                             </div>
                         </div>
@@ -82,14 +82,14 @@ $aff3Url = getSetting('footer_affiliation_3_url');
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                             </div>
                             <div>
-                                <h3 class="contact-item__label">Email</h3>
+                                <h2 class="contact-item__label">Email</h2>
                                 <p class="contact-item__value"><a href="mailto:<?= e($contactEmail) ?>" style="color:var(--color-accent);"><?= e($contactEmail) ?></a></p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="contact-links-box">
-                    <h3 class="contact-links-box__title">Quick Links</h3>
+                    <h2 class="contact-links-box__title">Quick Links</h2>
                     <div class="contact-links-box__list">
                         <a href="<?= SITE_URL ?>/">→ Home</a>
                         <a href="research.php">→ Research Projects</a>
@@ -120,22 +120,22 @@ $aff3Url = getSetting('footer_affiliation_3_url');
             <div class="footer__col">
                 <h4 class="footer__heading">Affiliations</h4>
                 <ul class="footer__list">
-                    <?php if ($aff1Name): ?><li><a href="<?= e($aff1Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($aff1Name) ?> ↗</a></li><?php endif; ?>
-                    <?php if ($aff2Name): ?><li><a href="<?= e($aff2Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($aff2Name) ?> ↗</a></li><?php endif; ?>
-                    <?php if ($aff3Name): ?><li><a href="<?= e($aff3Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($aff3Name) ?> ↗</a></li><?php endif; ?>
+                    <?php if ($aff1Name): ?><li><a href="<?= safeUrl($aff1Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($aff1Name) ?> ↗</a></li><?php endif; ?>
+                    <?php if ($aff2Name): ?><li><a href="<?= safeUrl($aff2Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($aff2Name) ?> ↗</a></li><?php endif; ?>
+                    <?php if ($aff3Name): ?><li><a href="<?= safeUrl($aff3Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($aff3Name) ?> ↗</a></li><?php endif; ?>
                 </ul>
             </div>
             <div class="footer__col">
                 <h4 class="footer__heading">Academic Profiles</h4>
                 <div class="footer__socials">
                     <?php if ($scholarUrl): ?>
-                    <a href="<?= e($scholarUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">GS</span> Google Scholar</a>
+                    <a href="<?= safeUrl($scholarUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">GS</span> Google Scholar</a>
                     <?php endif; ?>
                     <?php if ($rgUrl): ?>
-                    <a href="<?= e($rgUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">RG</span> ResearchGate</a>
+                    <a href="<?= safeUrl($rgUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">RG</span> ResearchGate</a>
                     <?php endif; ?>
                     <?php if ($orcidUrl): ?>
-                    <a href="<?= e($orcidUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">ID</span> ORCID</a>
+                    <a href="<?= safeUrl($orcidUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">ID</span> ORCID</a>
                     <?php endif; ?>
                 </div>
             </div>

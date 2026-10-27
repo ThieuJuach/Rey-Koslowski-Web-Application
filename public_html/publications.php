@@ -87,14 +87,14 @@ include 'includes/nav.php';
                     <div class="pub-card__content">
                         <?php $pubLink = $pub['link_url'] ?: ($pub['url'] ?: ($pub['doi'] ? 'https://doi.org/' . $pub['doi'] : '')); ?>
                         <?php if ($pubLink): ?>
-                        <a href="<?= e($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h4 class="pub-card__title"><?= e($pub['title']) ?></h4></a>
+                        <a href="<?= safeUrl($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h3 class="pub-card__title"><?= e($pub['title']) ?></h3></a>
                         <?php else: ?>
-                        <h4 class="pub-card__title"><?= e($pub['title']) ?></h4>
+                        <h3 class="pub-card__title"><?= e($pub['title']) ?></h3>
                         <?php endif; ?>
                         <p class="pub-card__meta"><?php if ($pub['authors']): ?><span class="pub-card__role"><?= e($pub['authors']) ?></span> · <?php endif; ?><?= e($pub['journal_or_publisher'] ?? '') ?></p>
                         <div class="pub-card__links">
                             <?php if ($pub['doi']): ?><a href="https://doi.org/<?= e($pub['doi']) ?>" target="_blank" class="pub-card__doi">[DOI]</a><?php endif; ?>
-                            <?php if ($pub['url']): ?><a href="<?= e($pub['url']) ?>" target="_blank" class="pub-card__doi">[Link]</a><?php endif; ?>
+                            <?php if ($pub['url']): ?><a href="<?= safeUrl($pub['url']) ?>" target="_blank" class="pub-card__doi">[Link]</a><?php endif; ?>
                             <?php if ($pub['pdf_path']): ?><a href="<?= SITE_URL . '/' . e($pub['pdf_path']) ?>#toolbar=1&navpanes=0&scrollbar=1" target="_blank" rel="noopener" class="pub-card__doi">[PDF]</a><?php endif; ?>
                         </div>
                         <?php if (!empty($pub['video_url'])): ?>
@@ -117,19 +117,19 @@ include 'includes/nav.php';
                         <?php if ($pub['citation']): ?>
                         <p class="pub-card__citation"><?= formatText($pub['citation']) ?>
                             <?php if ($pub['doi']): ?> <a href="https://doi.org/<?= e($pub['doi']) ?>" target="_blank" class="pub-card__doi">[DOI]</a><?php endif; ?>
-                            <?php if ($pub['url']): ?> <a href="<?= e($pub['url']) ?>" target="_blank" class="pub-card__doi">[Link]</a><?php endif; ?>
+                            <?php if ($pub['url']): ?> <a href="<?= safeUrl($pub['url']) ?>" target="_blank" class="pub-card__doi">[Link]</a><?php endif; ?>
                             <?php if ($pub['pdf_path']): ?> <a href="<?= SITE_URL . '/' . e($pub['pdf_path']) ?>#toolbar=1&navpanes=0&scrollbar=1" target="_blank" rel="noopener" class="pub-card__doi">[PDF]</a><?php endif; ?>
                         </p>
                         <?php else: ?>
                         <?php if ($pubLink): ?>
-                        <a href="<?= e($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h4 class="pub-card__title"><?= e($pub['title']) ?></h4></a>
+                        <a href="<?= safeUrl($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h3 class="pub-card__title"><?= e($pub['title']) ?></h3></a>
                         <?php else: ?>
-                        <h4 class="pub-card__title"><?= e($pub['title']) ?></h4>
+                        <h3 class="pub-card__title"><?= e($pub['title']) ?></h3>
                         <?php endif; ?>
                         <p class="pub-card__meta"><?= e($pub['authors'] ?? '') ?><?= $pub['journal_or_publisher'] ? ' · ' . e($pub['journal_or_publisher']) : '' ?></p>
                         <div class="pub-card__links">
                             <?php if ($pub['doi']): ?><a href="https://doi.org/<?= e($pub['doi']) ?>" target="_blank" class="pub-card__doi">[DOI]</a><?php endif; ?>
-                            <?php if ($pub['url']): ?><a href="<?= e($pub['url']) ?>" target="_blank" class="pub-card__doi">[Link]</a><?php endif; ?>
+                            <?php if ($pub['url']): ?><a href="<?= safeUrl($pub['url']) ?>" target="_blank" class="pub-card__doi">[Link]</a><?php endif; ?>
                             <?php if ($pub['pdf_path']): ?><a href="<?= SITE_URL . '/' . e($pub['pdf_path']) ?>#toolbar=1&navpanes=0&scrollbar=1" target="_blank" rel="noopener" class="pub-card__doi">[PDF]</a><?php endif; ?>
                         </div>
                         <?php endif; ?>
@@ -151,14 +151,14 @@ include 'includes/nav.php';
                     <div class="pub-card__content">
                         <?php $pubLink = $pub['link_url'] ?: ($pub['url'] ?: ''); ?>
                         <?php if ($pubLink): ?>
-                        <a href="<?= e($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h4 class="pub-card__title"><?= e($pub['title']) ?></h4></a>
+                        <a href="<?= safeUrl($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h3 class="pub-card__title"><?= e($pub['title']) ?></h3></a>
                         <?php else: ?>
-                        <h4 class="pub-card__title"><?= e($pub['title']) ?></h4>
+                        <h3 class="pub-card__title"><?= e($pub['title']) ?></h3>
                         <?php endif; ?>
                         <p class="pub-card__meta"><?= e($pub['journal_or_publisher'] ?? '') ?></p>
                         <div class="pub-card__links">
                             <?php if ($pub['doi']): ?><a href="https://doi.org/<?= e($pub['doi']) ?>" target="_blank" class="pub-card__doi">[DOI]</a><?php endif; ?>
-                            <?php if ($pub['url']): ?><a href="<?= e($pub['url']) ?>" target="_blank" class="pub-card__doi">[Link]</a><?php endif; ?>
+                            <?php if ($pub['url']): ?><a href="<?= safeUrl($pub['url']) ?>" target="_blank" class="pub-card__doi">[Link]</a><?php endif; ?>
                             <?php if ($pub['pdf_path']): ?><a href="<?= SITE_URL . '/' . e($pub['pdf_path']) ?>#toolbar=1&navpanes=0&scrollbar=1" target="_blank" rel="noopener" class="pub-card__doi">[PDF]</a><?php endif; ?>
                         </div>
                     </div>
@@ -176,9 +176,9 @@ include 'includes/nav.php';
                     <div class="pub-card__content">
                         <?php $pubLink = $pub['link_url'] ?: ($pub['url'] ?: ''); ?>
                         <?php if ($pubLink): ?>
-                        <a href="<?= e($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h4 class="pub-card__title"><?= e($pub['title']) ?></h4></a>
+                        <a href="<?= safeUrl($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link"><h3 class="pub-card__title"><?= e($pub['title']) ?></h3></a>
                         <?php else: ?>
-                        <h4 class="pub-card__title"><?= e($pub['title']) ?></h4>
+                        <h3 class="pub-card__title"><?= e($pub['title']) ?></h3>
                         <?php endif; ?>
                         <p class="pub-card__meta"><?= e($pub['authors'] ?? '') ?><?= $pub['journal_or_publisher'] ? ' · ' . e($pub['journal_or_publisher']) : '' ?></p>
                         <div class="pub-card__links">

@@ -170,7 +170,7 @@ $pagePdfs = getPagePdfs('media-appearances');
             <?php foreach ($pagePdfs as $pdf): ?>
             <div style="display:flex;align-items:center;gap:1rem;padding:0.5rem 0;border-bottom:1px solid var(--admin-border);">
                 <span>📄</span><div style="flex:1;font-size:0.875rem;"><?= e($pdf['title']) ?></div>
-                <form method="POST" style="display:inline" onsubmit="return confirm('Remove?')"><?= csrfField() ?><input type="hidden" name="delete_page_pdf" value="<?= $pdf['id'] ?>"><button type="submit" class="btn btn--danger" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Remove</button></form>
+                <form method="POST" style="display:inline" data-confirm="Remove?" ><?= csrfField() ?><input type="hidden" name="delete_page_pdf" value="<?= $pdf['id'] ?>"><button type="submit" class="btn btn--danger" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Remove</button></form>
             </div>
             <?php endforeach; ?>
         </div>
@@ -189,7 +189,7 @@ $pagePdfs = getPagePdfs('media-appearances');
                         <?= ($item['pdf_path'] ?? '') ? '📄' : '' ?>
                     </div>
                     <a href="?edit=<?= $item['id'] ?>" class="btn btn--outline" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Edit</a>
-                    <form method="POST" style="display:inline" onsubmit="return confirm('Delete?')">
+                    <form method="POST" style="display:inline" data-confirm="Delete?" >
                         <?= csrfField() ?>
                         <input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= $item['id'] ?>">
                         <button type="submit" class="btn btn--danger" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Delete</button>
@@ -200,6 +200,5 @@ $pagePdfs = getPagePdfs('media-appearances');
         </div>
     </div>
 </div>
-<script>const SITE_URL = '<?= SITE_URL ?>';</script>
 <script src="<?= asset('assets/js/admin.js') ?>"></script>
 </body></html>

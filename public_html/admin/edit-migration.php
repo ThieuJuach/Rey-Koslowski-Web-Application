@@ -115,10 +115,10 @@ $ugCourses = getMigrationCourses('undergraduate');
             <?php foreach ($faculty as $f): ?>
             <div style="display:flex;align-items:center;gap:1rem;padding:0.5rem 0;border-bottom:1px solid var(--admin-border);">
                 <div style="flex:1;font-size:0.875rem;"><strong><?= e($f['name']) ?></strong> — <?= e($f['department'] ?? '') ?>
-                    <?php if ($f['profile_url']): ?> <a href="<?= e($f['profile_url']) ?>" target="_blank" rel="noopener" style="color:var(--admin-accent);">🔗</a><?php endif; ?>
+                    <?php if ($f['profile_url']): ?> <a href="<?= safeUrl($f['profile_url']) ?>" target="_blank" rel="noopener" style="color:var(--admin-accent);">🔗</a><?php endif; ?>
                 </div>
                 <a href="?edit_faculty=<?= $f['id'] ?>" class="btn btn--outline" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Edit</a>
-                <form method="POST" style="display:inline" onsubmit="return confirm('Delete?')">
+                <form method="POST" style="display:inline" data-confirm="Delete?" >
                     <?= csrfField() ?>
                     <input type="hidden" name="action" value="delete_faculty"><input type="hidden" name="id" value="<?= $f['id'] ?>">
                     <button type="submit" class="btn btn--danger" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Delete</button>
@@ -162,7 +162,7 @@ $ugCourses = getMigrationCourses('undergraduate');
                     <span class="badge <?= $c['level'] === 'graduate' ? 'badge--warning' : 'badge--success' ?>"><?= e($c['level']) ?></span>
                 </div>
                 <a href="?edit_course=<?= $c['id'] ?>" class="btn btn--outline" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Edit</a>
-                <form method="POST" style="display:inline" onsubmit="return confirm('Delete?')">
+                <form method="POST" style="display:inline" data-confirm="Delete?" >
                     <?= csrfField() ?>
                     <input type="hidden" name="action" value="delete_course"><input type="hidden" name="id" value="<?= $c['id'] ?>">
                     <button type="submit" class="btn btn--danger" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Delete</button>
@@ -172,6 +172,5 @@ $ugCourses = getMigrationCourses('undergraduate');
         </div>
     </div>
 </div>
-<script>const SITE_URL = '<?= SITE_URL ?>';</script>
 <script src="<?= asset('assets/js/admin.js') ?>"></script>
 </body></html>

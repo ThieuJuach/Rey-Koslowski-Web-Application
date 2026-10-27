@@ -182,7 +182,7 @@ $items = $pdo->query("SELECT * FROM community_engagement_items ORDER BY display_
                             <td><?= $item['event_date'] ? date('M j, Y', strtotime($item['event_date'])) : '—' ?></td>
                             <td style="white-space:nowrap;">
                                 <a href="?edit=<?= $item['id'] ?>" class="btn btn--outline" style="padding:0.25rem 0.75rem;font-size:0.75rem;">Edit</a>
-                                <form method="POST" enctype="multipart/form-data" style="display:inline;" onsubmit="return confirm('Delete?')">
+                                <form method="POST" enctype="multipart/form-data" style="display:inline;" data-confirm="Delete?" >
                                     <?= csrfField() ?>
                                     <input type="hidden" name="delete_id" value="<?= $item['id'] ?>">
                                     <button type="submit" class="btn btn--danger" style="padding:0.25rem 0.75rem;font-size:0.75rem;">Delete</button>
@@ -196,4 +196,5 @@ $items = $pdo->query("SELECT * FROM community_engagement_items ORDER BY display_
             <?php endif; ?>
         </div>
     </div>
+<script src="<?= asset('assets/js/admin.js') ?>"></script>
 </body></html>

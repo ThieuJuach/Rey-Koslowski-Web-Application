@@ -77,13 +77,13 @@ $orcidUrl = getSetting('orcid_url');
                     <h4 class="footer__heading">Affiliations</h4>
                     <ul class="footer__list">
                         <?php if ($footerAff1Name): ?>
-                        <li><a href="<?= e($footerAff1Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($footerAff1Name) ?> ↗</a></li>
+                        <li><a href="<?= safeUrl($footerAff1Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($footerAff1Name) ?> ↗</a></li>
                         <?php endif; ?>
                         <?php if ($footerAff2Name): ?>
-                        <li><a href="<?= e($footerAff2Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($footerAff2Name) ?> ↗</a></li>
+                        <li><a href="<?= safeUrl($footerAff2Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($footerAff2Name) ?> ↗</a></li>
                         <?php endif; ?>
                         <?php if ($footerAff3Name): ?>
-                        <li><a href="<?= e($footerAff3Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($footerAff3Name) ?> ↗</a></li>
+                        <li><a href="<?= safeUrl($footerAff3Url) ?>" target="_blank" rel="noopener noreferrer"><?= e($footerAff3Name) ?> ↗</a></li>
                         <?php endif; ?>
                     </ul>
                 </div>
@@ -91,13 +91,13 @@ $orcidUrl = getSetting('orcid_url');
                     <h4 class="footer__heading">Academic Profiles</h4>
                     <div class="footer__socials">
                         <?php if ($scholarUrl): ?>
-                        <a href="<?= e($scholarUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">GS</span>Google Scholar</a>
+                        <a href="<?= safeUrl($scholarUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">GS</span>Google Scholar</a>
                         <?php endif; ?>
                         <?php if ($rgUrl): ?>
-                        <a href="<?= e($rgUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">RG</span>ResearchGate</a>
+                        <a href="<?= safeUrl($rgUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">RG</span>ResearchGate</a>
                         <?php endif; ?>
                         <?php if ($orcidUrl): ?>
-                        <a href="<?= e($orcidUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">ID</span>ORCID</a>
+                        <a href="<?= safeUrl($orcidUrl) ?>" target="_blank" rel="noopener noreferrer" class="footer__social-link"><span class="footer__social-icon">ID</span>ORCID</a>
                         <?php endif; ?>
                     </div>
                 </div>

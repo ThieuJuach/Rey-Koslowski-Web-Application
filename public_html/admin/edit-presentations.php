@@ -226,7 +226,7 @@ $pagePdfs = getPagePdfs('presentations');
                 <?php foreach ($pagePdfs as $pdf): ?>
                 <div style="display:flex;align-items:center;gap:1rem;padding:0.5rem 0;border-bottom:1px solid var(--admin-border);">
                     <span>📄</span><div style="flex:1;font-size:0.875rem;"><?= e($pdf['title']) ?></div>
-                    <form method="POST" style="display:inline" onsubmit="return confirm('Remove?')"><?= csrfField() ?><input type="hidden" name="delete_page_pdf" value="<?= $pdf['id'] ?>"><button type="submit" class="btn btn--danger" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Remove</button></form>
+                    <form method="POST" style="display:inline" data-confirm="Remove?" ><?= csrfField() ?><input type="hidden" name="delete_page_pdf" value="<?= $pdf['id'] ?>"><button type="submit" class="btn btn--danger" style="padding:0.25rem 0.5rem;font-size:0.75rem;">Remove</button></form>
                 </div>
                 <?php endforeach; ?>
             </div>
@@ -255,7 +255,7 @@ $pagePdfs = getPagePdfs('presentations');
                             </td>
                             <td style="white-space:nowrap;">
                                 <a href="?edit=<?= $p['id'] ?>" class="btn btn--outline" style="padding:0.25rem 0.75rem;font-size:0.75rem;">Edit</a>
-                                <form method="POST" style="display:inline;" onsubmit="return confirm('Delete?')">
+                                <form method="POST" style="display:inline;" data-confirm="Delete?" >
                                     <?= csrfField() ?>
                                     <input type="hidden" name="delete_id" value="<?= $p['id'] ?>">
                                     <button type="submit" class="btn btn--danger" style="padding:0.25rem 0.75rem;font-size:0.75rem;">Delete</button>
@@ -269,4 +269,5 @@ $pagePdfs = getPagePdfs('presentations');
             <?php endif; ?>
         </div>
     </div>
+<script src="<?= asset('assets/js/admin.js') ?>"></script>
 </body></html>

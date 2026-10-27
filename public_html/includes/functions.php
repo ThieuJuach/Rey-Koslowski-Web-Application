@@ -1391,6 +1391,38 @@ function videoFacade(string $provider, string $videoId): string {
 }
 
 /**
+ * Escape a URL for an href/src attribute, refusing dangerous schemes.
+ *
+ * sanitizeUrl() already rejects anything but http(s) and site-relative paths on
+ * the way in, but that only protects rows written through the current forms. A
+ * value stored before that filter existed, or written by any other route, still
+ * reaches a template - and "javascript:alert(1)" in an href runs on click. This
+ * is the output-side half of the pair: whatever is in the database, what lands
+ * in the attribute is either a safe URL or nothing at all.
+ *
+ * Returns '' for a rejected URL so callers can treat it as "no link".
+ */
+function safeUrl(?string $url): string {
+    $url = trim((string) $url);
+    if ($url === '') return '';
+
+    // Strip control characters first: "java\0script:" and "java\tscript:" are
+    // both read as javascript: by some browsers.
+    $probe = strtolower(preg_replace('/[\x00-\x20]/', '', $url));
+
+    // Protocol-relative is refused: it can retarget to an attacker's host.
+    if (str_starts_with($probe, '//')) return '';
+
+    if (str_starts_with($url, '/') || str_starts_with($url, '#') || str_starts_with($url, '?')) {
+        return e($url);
+    }
+    if (preg_match('/^(https?|mailto|tel):/', $probe)) {
+        return e($url);
+    }
+    return '';
+}
+
+/**
  * Render a PDF link/viewer for a given path.
  * Shows a "View PDF" button that opens the PDF in-browser or embedded iframe.
  * 

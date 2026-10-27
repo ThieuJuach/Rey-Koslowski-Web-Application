@@ -275,7 +275,7 @@ function formatBytes($bytes): string {
                     <img src="<?= SITE_URL . '/' . e($img['image_path']) ?>" alt="<?= e($img['alt_text'] ?? '') ?>" style="width:100%;height:150px;object-fit:cover;" loading="lazy">
                     <div style="padding:0.75rem;">
                         <span class="badge badge--warning"><?= e($img['image_type']) ?></span>
-                        <form method="POST" style="margin-top:0.5rem;" onsubmit="return confirm('Remove this image from the page?')">
+                        <form method="POST" style="margin-top:0.5rem;" data-confirm="Remove this image from the page?" >
                             <?= csrfField() ?>
                             <input type="hidden" name="action" value="delete_page_image">
                             <input type="hidden" name="id" value="<?= (int) $img['id'] ?>">
@@ -324,7 +324,7 @@ function formatBytes($bytes): string {
                     <div style="padding:0.5rem;display:flex;flex-direction:column;gap:0.25rem;flex:1;">
                         <p style="font-size:0.7rem;color:var(--color-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?= e($upload['original_name']) ?>"><?= e($upload['original_name']) ?></p>
                         <p style="font-size:0.65rem;color:var(--color-muted);"><?= e(formatBytes($upload['file_size'] ?? 0)) ?></p>
-                        <form method="POST" style="margin-top:auto;" onsubmit="return confirm('Delete this file permanently? Any page still using it will show a broken link.')">
+                        <form method="POST" style="margin-top:auto;" data-confirm="Delete this file permanently? Any page still using it will show a broken link." >
                             <?= csrfField() ?>
                             <input type="hidden" name="action" value="delete_upload">
                             <input type="hidden" name="id" value="<?= (int) $upload['id'] ?>">
@@ -338,4 +338,5 @@ function formatBytes($bytes): string {
         </div>
     </div>
 </div>
+<script src="<?= asset('assets/js/admin.js') ?>"></script>
 </body></html>

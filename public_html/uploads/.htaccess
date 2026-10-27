@@ -9,8 +9,16 @@
 
 # Block .php, .phtml, .php5, .phar, etc. from being accessed directly
 <FilesMatch "\.(php|phtml|php5|php7|phar|cgi|pl|py|sh|bash)$">
-    Order Allow,Deny
-    Deny from all
+    # Dual syntax on purpose. The bare 2.2 form 500s on an Apache 2.4 host that
+    # does not load mod_access_compat - and because this file governs the
+    # uploads folder, that 500 takes every image and PDF on the site with it.
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order Allow,Deny
+        Deny from all
+    </IfModule>
 </FilesMatch>
 
 # Disable script execution
