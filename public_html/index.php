@@ -244,10 +244,21 @@ $cvSrc    = $cvOnDisk ? SITE_URL . '/' . $cvFilePath : $cvUrl;
             </h3>
             <div class="publications-list">
                 <?php foreach ($currentPubs as $pub): ?>
+                <?php /*
+                   Same card as the Publications page: cover, title, authors in
+                   the accent role style, then the DOI/Link/PDF row. This block
+                   used to show only a title and a line of meta, so a book with
+                   a cover looked bare here and quite different from the page it
+                   links to. getCurrentPublications() already selects every
+                   column, so nothing extra is queried for this.
+                */ ?>
                 <div class="pub-card">
+                    <?php if (!empty($pub['image_path'])): ?>
+                    <img class="pub-card__cover" src="<?= SITE_URL . '/' . e($pub['image_path']) ?>" alt="<?= e($pub['title']) ?>" loading="lazy" decoding="async">
+                    <?php endif; ?>
                     <div class="pub-card__content">
-                        <?php if ($pub['link_url'] || $pub['url'] || $pub['doi']): ?>
                         <?php $pubLink = $pub['link_url'] ?: ($pub['url'] ?: ($pub['doi'] ? 'https://doi.org/' . $pub['doi'] : '')); ?>
+                        <?php if ($pubLink): ?>
                         <a href="<?= safeUrl($pubLink) ?>" target="_blank" rel="noopener" class="pub-card__title-link">
                             <h3 class="pub-card__title"><?= e($pub['title']) ?></h3>
                         </a>
@@ -255,9 +266,14 @@ $cvSrc    = $cvOnDisk ? SITE_URL . '/' . $cvFilePath : $cvUrl;
                         <h3 class="pub-card__title"><?= e($pub['title']) ?></h3>
                         <?php endif; ?>
                         <p class="pub-card__meta">
-                            <?= e($pub['authors'] ?? '') ?>
-                            <?= $pub['journal_or_publisher'] ? ' · ' . e($pub['journal_or_publisher']) : '' ?>
+                            <?php if (!empty($pub['authors'])): ?><span class="pub-card__role"><?= e($pub['authors']) ?></span> · <?php endif; ?>
+                            <?= e($pub['journal_or_publisher'] ?? '') ?>
                         </p>
+                        <div class="pub-card__links">
+                            <?php if (!empty($pub['doi'])): ?><a href="https://doi.org/<?= e($pub['doi']) ?>" target="_blank" rel="noopener" class="pub-card__doi">[DOI]</a><?php endif; ?>
+                            <?php if (!empty($pub['url'])): ?><a href="<?= safeUrl($pub['url']) ?>" target="_blank" rel="noopener" class="pub-card__doi">[Link]</a><?php endif; ?>
+                            <?php if (!empty($pub['pdf_path'])): ?><a href="<?= SITE_URL . '/' . e($pub['pdf_path']) ?>#toolbar=1&navpanes=0&scrollbar=1" target="_blank" rel="noopener" class="pub-card__doi">[PDF]</a><?php endif; ?>
+                        </div>
                     </div>
                     <span class="pub-card__year"><?= e($pub['year'] ?? '') ?></span>
                 </div>

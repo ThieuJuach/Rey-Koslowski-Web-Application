@@ -82,7 +82,7 @@ include 'includes/nav.php';
                 <?php foreach ($books as $pub): ?>
                 <div class="pub-card">
                     <?php if (!empty($pub['image_path'])): ?>
-                    <img src="<?= SITE_URL . '/' . e($pub['image_path']) ?>" alt="<?= e($pub['title']) ?>" style="width:80px;height:auto;border-radius:var(--radius);flex-shrink:0;">
+                    <img class="pub-card__cover" src="<?= SITE_URL . '/' . e($pub['image_path']) ?>" alt="<?= e($pub['title']) ?>" loading="lazy" decoding="async">
                     <?php endif; ?>
                     <div class="pub-card__content">
                         <?php $pubLink = $pub['link_url'] ?: ($pub['url'] ?: ($pub['doi'] ? 'https://doi.org/' . $pub['doi'] : '')); ?>
