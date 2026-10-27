@@ -1362,6 +1362,131 @@ function renderVideoEmbed(string $url): string {
 }
 
 /**
+ * Local path to a video's poster image, fetching and caching it once.
+ *
+ * The facade looked dead without a poster - a flat gradient tells a visitor
+ * nothing about the video. The obvious fix, pointing <img> straight at
+ * i.ytimg.com, would undo the reason the facade exists: that request happens
+ * on page load, before anyone has answered the consent banner, and hands the
+ * visitor's IP to Google exactly as the old auto-loading iframe did.
+ *
+ * So the poster is fetched once by the server and stored under uploads. After
+ * that it is an ordinary same-origin image. Visitors never contact a third
+ * party; the page still looks alive.
+ *
+ * A failed fetch writes a dated marker so a video whose thumbnail does not
+ * exist is not re-requested on every page view. The marker expires after a
+ * day, which is enough for a transient outage to heal itself.
+ *
+ * @return string Web-relative path, or '' when no poster could be obtained.
+ */
+function videoThumbnail(string $provider, string $videoId): string {
+    // The id is already constrained by renderVideoEmbed()'s patterns, but this
+    // value is about to be used in a filename and a URL, so re-assert it.
+    if (!preg_match('/^[A-Za-z0-9_-]{1,32}$/', $videoId)) return '';
+    if (!in_array($provider, ['youtube', 'vimeo'], true)) return '';
+
+    $relDir  = 'uploads/images/video-thumbs';
+    $absDir  = __DIR__ . '/../' . $relDir;
+    $name    = $provider . '-' . $videoId . '.jpg';
+    $absFile = $absDir . '/' . $name;
+    $relFile = $relDir . '/' . $name;
+
+    if (is_file($absFile) && filesize($absFile) > 0) {
+        return $relFile;
+    }
+
+    $marker = $absFile . '.unavailable';
+    if (is_file($marker) && (time() - filemtime($marker)) < 86400) {
+        return '';
+    }
+
+    if (!is_dir($absDir) && !@mkdir($absDir, 0755, true)) return '';
+    if (!is_writable($absDir)) return '';
+
+    $candidates = [];
+    if ($provider === 'youtube') {
+        // maxres does not exist for every video; hq always does.
+        $candidates[] = 'https://i.ytimg.com/vi/' . $videoId . '/maxresdefault.jpg';
+        $candidates[] = 'https://i.ytimg.com/vi/' . $videoId . '/hqdefault.jpg';
+    } else {
+        $oembed = fetchRemoteBytes(
+            'https://vimeo.com/api/oembed.json?url=https%3A//vimeo.com/' . $videoId,
+            200000
+        );
+        if ($oembed !== '') {
+            $data = json_decode($oembed, true);
+            $thumb = is_array($data) ? ($data['thumbnail_url'] ?? '') : '';
+            // Only follow Vimeo's own CDN. The URL comes from a remote response,
+            // so without this check it could point the server anywhere.
+            $host = strtolower((string) parse_url($thumb, PHP_URL_HOST));
+            if ($thumb && ($host === 'i.vimeocdn.com' || str_ends_with($host, '.vimeocdn.com'))) {
+                $candidates[] = $thumb;
+            }
+        }
+    }
+
+    foreach ($candidates as $url) {
+        $bytes = fetchRemoteBytes($url, 3 * 1024 * 1024);
+        if ($bytes === '') continue;
+
+        // Must actually be an image, and not a 120x90 "unavailable" placeholder,
+        // which is what YouTube serves for a missing maxresdefault.
+        $info = @getimagesizefromstring($bytes);
+        if (!$info || $info[0] < 200) continue;
+        if (!in_array($info[2], [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP], true)) continue;
+
+        if (@file_put_contents($absFile, $bytes) !== false) {
+            @chmod($absFile, 0644);
+            @unlink($marker);
+            return $relFile;
+        }
+    }
+
+    @file_put_contents($marker, '');
+    return '';
+}
+
+/**
+ * Fetch a small remote file, with a short timeout and a hard size cap.
+ *
+ * Used only for video posters, whose URLs are built from a validated id and a
+ * fixed host. Redirects are not followed: every endpoint used here answers
+ * directly, and following them would widen where the server can be sent.
+ */
+function fetchRemoteBytes(string $url, int $maxBytes): string {
+    if (!preg_match('#^https://#i', $url)) return '';
+
+    if (function_exists('curl_init')) {
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_CONNECTTIMEOUT => 3,
+            CURLOPT_TIMEOUT        => 6,
+            CURLOPT_USERAGENT      => 'Mozilla/5.0 (compatible; site-thumbnail-cache)',
+            CURLOPT_SSL_VERIFYPEER => true,
+            CURLOPT_SSL_VERIFYHOST => 2,
+        ]);
+        $body = curl_exec($ch);
+        $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        curl_close($ch);
+        if ($body === false || $code !== 200) return '';
+        return strlen($body) > $maxBytes ? '' : $body;
+    }
+
+    if (!ini_get('allow_url_fopen')) return '';
+    $ctx = stream_context_create(['http' => [
+        'timeout'       => 6,
+        'follow_location' => 0,
+        'user_agent'    => 'Mozilla/5.0 (compatible; site-thumbnail-cache)',
+    ]]);
+    $body = @file_get_contents($url, false, $ctx, 0, $maxBytes + 1);
+    if ($body === false) return '';
+    return strlen($body) > $maxBytes ? '' : $body;
+}
+
+/**
  * A click-to-play stand-in for a third-party video player.
  *
  * Returns markup that contacts nobody. assets/js/main.js replaces it with the
@@ -1377,9 +1502,21 @@ function renderVideoEmbed(string $url): string {
 function videoFacade(string $provider, string $videoId): string {
     $label = $provider === 'vimeo' ? 'Vimeo' : 'YouTube';
 
+    /*
+     * The poster is a locally cached copy (see videoThumbnail()), so it is a
+     * same-origin image like any other. When there is none - a private video,
+     * or the server could not reach the CDN - the gradient underneath shows
+     * through and the play button still reads clearly against it.
+     */
+    $poster = videoThumbnail($provider, $videoId);
+    $posterTag = $poster === '' ? '' :
+        '<img class="video-facade__poster" src="' . e(SITE_URL . '/' . $poster) . '" '
+      . 'alt="" loading="lazy" decoding="async" width="1280" height="720">';
+
     return '<div class="video-embed video-embed--facade" '
          . 'data-video-provider="' . e($provider) . '" '
          . 'data-video-id="' . e($videoId) . '">'
+         . $posterTag
          . '<button type="button" class="video-facade__play" '
          . 'aria-label="Play video (loads ' . e($label) . ')">'
          . '<svg width="68" height="48" viewBox="0 0 68 48" aria-hidden="true" focusable="false">'

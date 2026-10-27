@@ -119,19 +119,14 @@ $pagePdfs = getPagePdfs('teaching');
         <?php if (!empty($featuredMsg)): ?><div class="alert alert--success"><?= e($featuredMsg) ?></div><?php endif; ?>
         <?= renderFeaturedBlockCard('teaching', 'Teaching') ?>
 
-            <p style="color:var(--color-muted);font-size:0.8125rem;margin-bottom:1rem;">
-                Appears at the top of the public Teaching page, above the list.
-                Leave blank to hide it. Separate paragraphs with a blank line.
-            </p>
-            <form method="POST">
-                <?= csrfField() ?>
-                <input type="hidden" name="action" value="save_intro">
-                <div class="form-group">
-                    <textarea class="form-textarea" name="page_content" rows="14"><?= e($pageIntro['content'] ?? '') ?></textarea>
-                </div>
-                <button type="submit" class="btn btn--primary">Save Introduction</button>
-            </form>
-        </div>
+            <?php /*
+               A leftover "page introduction" form used to sit here, from before
+               the featured block replaced it. Nothing handled its save_intro
+               action and $pageIntro was never set, so it saved nothing - but it
+               also carried a stray </div> that closed .admin-main early, which
+               threw every card below it outside the layout container. That is
+               what made this page look unstyled.
+            */ ?>
 
             <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
 

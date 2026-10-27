@@ -399,7 +399,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const btn = box.querySelector('.video-facade__play');
         if (!btn) return;
 
-        btn.addEventListener('click', function () {
+        /*
+         * Listen on the whole tile, not just the button. The poster fills the
+         * box and the CSS already shows a pointer cursor over all of it, so a
+         * click near the image but off the small triangle should still play.
+         * A click on the button bubbles up to here, so it still fires once,
+         * and the button stays in the markup for keyboard and screen readers.
+         */
+        box.addEventListener('click', function () {
             const provider = box.dataset.videoProvider;
             const id = box.dataset.videoId;
             if (!id) return;

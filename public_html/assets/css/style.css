@@ -976,3 +976,23 @@ a.current-item__title:hover { color: var(--color-accent); }
     }
     .footer__list li { margin-bottom: 0.125rem; }
 }
+
+/* ─── Video poster ──────────────────────────────────────────────────────────
+   The cached thumbnail sits behind the play button. It is dimmed slightly so
+   the white play triangle stays legible over a bright frame, and brightens on
+   hover to signal the whole tile is clickable. */
+.video-facade__poster {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    filter: brightness(0.78);
+    transition: filter 0.25s, transform 0.25s;
+}
+/* focus-within, not a sibling combinator: the poster is rendered BEFORE the
+   button, and `~` only reaches siblings that come after it. */
+.video-embed--facade:hover .video-facade__poster,
+.video-embed--facade:focus-within .video-facade__poster {
+    filter: brightness(0.92);
+    transform: scale(1.015);
+}

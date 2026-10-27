@@ -112,6 +112,20 @@ $items = $pdo->query("SELECT * FROM community_engagement_items ORDER BY display_
             <?php if ($success): ?><div class="alert alert--success"><?= e($success) ?></div><?php endif; ?>
             <?php if ($error): ?><div class="alert alert--error"><?= e($error) ?></div><?php endif; ?>
 
+            <?php /*
+               This card's opening tag went missing when the page became
+               items-only; its </div> was left behind further down, which
+               closed .admin-main early and dropped the list below out of the
+               layout. Restoring the wrapper fixes the nesting and gives the
+               form back the card styling the rest of the admin uses.
+            */ ?>
+            <div class="admin-card">
+                <div class="admin-card__header">
+                    <h2 class="admin-card__title"><?= $editItem ? 'Edit Item' : 'Add Item' ?></h2>
+                    <?php if ($editItem): ?>
+                    <a href="edit-community-engagement.php" class="btn btn--outline" style="padding:0.25rem 0.75rem;font-size:0.75rem;">← Cancel Edit</a>
+                    <?php endif; ?>
+                </div>
                 <form method="POST" enctype="multipart/form-data">
                     <?= csrfField() ?>
                     <?php if ($editItem): ?><input type="hidden" name="edit_id" value="<?= $editItem['id'] ?>"><?php endif; ?>
