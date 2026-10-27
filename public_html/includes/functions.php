@@ -1343,13 +1343,13 @@ function renderVideoEmbed(string $url): string {
     // YouTube: extract video ID from various URL formats
     if (preg_match('/(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $url, $m)) {
         $videoId = $m[1];
-        return '<div class="video-embed"><iframe src="https://www.youtube-nocookie.com/embed/' . e($videoId) . '?rel=0" allowfullscreen loading="lazy" title="Video"></iframe></div>';
+        return videoFacade('youtube', $videoId);
     }
     
     // Vimeo: extract video ID
     if (preg_match('/vimeo\.com\/(\d+)/', $url, $m)) {
         $videoId = $m[1];
-        return '<div class="video-embed"><iframe src="https://player.vimeo.com/video/' . e($videoId) . '?dnt=1" allowfullscreen loading="lazy" title="Video"></iframe></div>';
+        return videoFacade('vimeo', $videoId);
     }
     
     // Direct video file (mp4, webm, ogg) — local or remote
@@ -1359,6 +1359,35 @@ function renderVideoEmbed(string $url): string {
     }
     
     return '';
+}
+
+/**
+ * A click-to-play stand-in for a third-party video player.
+ *
+ * Returns markup that contacts nobody. assets/js/main.js replaces it with the
+ * real iframe when the button is pressed, so Google or Vimeo only hear from the
+ * visitor if they actually choose to watch. That matters for consent - an
+ * autoloading iframe sends the IP and User-Agent before the banner is answered -
+ * and it removes roughly two dozen requests from a page carrying four videos.
+ *
+ * The provider and id are the only values interpolated, and both are already
+ * constrained: the id comes from a [a-zA-Z0-9_-]{11} or \d+ match in
+ * renderVideoEmbed(), and the provider is a literal in this file.
+ */
+function videoFacade(string $provider, string $videoId): string {
+    $label = $provider === 'vimeo' ? 'Vimeo' : 'YouTube';
+
+    return '<div class="video-embed video-embed--facade" '
+         . 'data-video-provider="' . e($provider) . '" '
+         . 'data-video-id="' . e($videoId) . '">'
+         . '<button type="button" class="video-facade__play" '
+         . 'aria-label="Play video (loads ' . e($label) . ')">'
+         . '<svg width="68" height="48" viewBox="0 0 68 48" aria-hidden="true" focusable="false">'
+         . '<path class="video-facade__bg" d="M66.5 7.7a8.6 8.6 0 0 0-6-6C55.2 0 34 0 34 0S12.8 0 7.5 1.7a8.6 8.6 0 0 0-6 6A89.6 89.6 0 0 0 0 24a89.6 89.6 0 0 0 1.5 16.3 8.6 8.6 0 0 0 6 6C12.8 48 34 48 34 48s21.2 0 26.5-1.7a8.6 8.6 0 0 0 6-6A89.6 89.6 0 0 0 68 24a89.6 89.6 0 0 0-1.5-16.3z"/>'
+         . '<path d="M45 24 27 14v20z" fill="#fff"/></svg>'
+         . '</button>'
+         . '<span class="video-facade__note">Plays from ' . e($label) . '</span>'
+         . '</div>';
 }
 
 /**

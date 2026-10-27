@@ -105,7 +105,7 @@ ServerSignature Off
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
     
     # Content Security Policy
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; connect-src 'self'; form-action 'self'; base-uri 'self'; object-src 'none';"
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: https:; frame-src 'self' https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; connect-src 'self'; form-action 'self'; base-uri 'self'; object-src 'none';"
     
     # Strict Transport Security (HTTPS only — 1 year)
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"

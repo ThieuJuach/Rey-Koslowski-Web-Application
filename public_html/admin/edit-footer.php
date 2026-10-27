@@ -48,7 +48,10 @@ $orcid = getSetting('orcid_url');
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow">
     <title>Edit Footer | <?= SITE_TITLE ?> Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+        <?php // Self-hosted: see assets/css/fonts.css. Loading these from
+              // Google sent every visitor's IP there before they had answered
+              // the consent banner. ?>
+        <link rel="stylesheet" href="<?= asset('assets/css/fonts.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/style.css') ?>">
     <link rel="stylesheet" href="<?= asset('assets/css/admin.css') ?>">
 </head>

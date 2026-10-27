@@ -895,6 +895,27 @@ a.current-item__title:hover { color: var(--color-accent); }
     border-radius: var(--radius);
 }
 
+/* Click-to-play stand-in for a third-party video. Keeps the 16:9 box of a real
+   embed so nothing shifts when the iframe replaces it. */
+.video-embed--facade {
+    background: linear-gradient(135deg, hsl(220, 30%, 18%), hsl(220, 45%, 12%));
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+}
+.video-facade__play {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: none; border: none; padding: 0; cursor: pointer; z-index: 2;
+}
+.video-facade__bg { fill: hsla(0, 0%, 0%, 0.55); transition: fill 0.2s; }
+.video-embed--facade:hover .video-facade__bg,
+.video-facade__play:focus-visible .video-facade__bg { fill: hsl(0, 72%, 50%); }
+.video-facade__play:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 4px; border-radius: 0.5rem; }
+.video-facade__note {
+    position: absolute; bottom: 0.75rem; left: 0; right: 0;
+    text-align: center; font-size: 0.75rem; color: hsla(0, 0%, 100%, 0.75);
+    pointer-events: none;
+}
+
 /* ─── PDF Viewer ─── */
 .pdf-inline { margin: 1rem 0; }
 .pdf-inline__link {

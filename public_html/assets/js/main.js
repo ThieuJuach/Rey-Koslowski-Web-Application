@@ -383,6 +383,43 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
+    /*
+     * --- Deferred video players ---
+     *
+     * Each facade swaps itself for the real iframe when its play button is
+     * pressed. Until then nothing has been requested from YouTube or Vimeo, so
+     * the visitor's IP never reaches them before they have chosen to watch -
+     * and a page with four videos loads without two dozen extra requests.
+     *
+     * autoplay=1 is set on the swapped-in iframe because the visitor has
+     * already clicked play; without it they would have to click twice.
+     */
+    document.querySelectorAll('.video-embed--facade').forEach(function (box) {
+        const btn = box.querySelector('.video-facade__play');
+        if (!btn) return;
+
+        btn.addEventListener('click', function () {
+            const provider = box.dataset.videoProvider;
+            const id = box.dataset.videoId;
+            if (!id) return;
+
+            const src = provider === 'vimeo'
+                ? 'https://player.vimeo.com/video/' + encodeURIComponent(id) + '?dnt=1&autoplay=1'
+                : 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) + '?rel=0&autoplay=1';
+
+            const frame = document.createElement('iframe');
+            frame.src = src;
+            frame.title = 'Video';
+            frame.allow = 'accelerometer; autoplay; encrypted-media; picture-in-picture';
+            frame.allowFullscreen = true;
+
+            box.classList.remove('video-embed--facade');
+            box.innerHTML = '';
+            box.appendChild(frame);
+        });
+    });
+
 });
 
 /*
